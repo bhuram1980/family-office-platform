@@ -1085,7 +1085,7 @@ def close_recon():
     for t in recs:
         diff = (t.statement_balance or 0) - (t.book_balance or 0) if t.statement_balance is not None else None
         frm = (f'<form method="post" style="display:flex;gap:6px"><input type="hidden" name="csrf_token" value="{tok}"><input type="hidden" name="tid" value="{t.id}">'
-               f'<input type="hidden" name="period" value="{period}"><input class="input sm" name="statement_balance" type="number" step="0.01" value="{t.statement_balance or ""}" style="width:140px">'
+               f'<input type="hidden" name="period" value="{period}"><input class="inp" name="statement_balance" type="number" step="0.01" value="{t.statement_balance or ""}" style="width:140px">'
                f'<button class="btn sm">Save</button></form>')
         rows.append([t.bank_account.name, M(t.book_balance, 2), html(frm)["html"], M(diff, 2, color=True) if diff is not None else "—", status(t.status)])
     return render("Bank Reconciliations", [card(f"Period {period}", table(["Account", ">Book balance", "Statement balance", ">Difference", "Status"], rows, sortable=False))],

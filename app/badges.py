@@ -31,3 +31,9 @@ def _proposals():
 def _watch():
     from .models import WatchItem
     return WatchItem.query.count()
+
+
+@badge("re_issues")
+def _re_issues():
+    from .models import REIssue
+    return REIssue.query.filter_by(status="Open", severity="HIGH").count()

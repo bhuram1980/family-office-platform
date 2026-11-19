@@ -139,7 +139,20 @@ app("philanthropy", "Philanthropy", "PH", "Philanthropy", "#e11d48",
 app("tasks", "Tasks", "TK", "Tasks", "#2563eb",
     "The office's work queue: assignments, sign-offs, recurring checklists, projects and meetings.")
 app("real-estate", "Real Estate", "RE", "Real Estate", "#16a34a",
-    "Property portfolio: value, equity, NOI, debt, DSCR and a market watch for every metro you own in.")
+    "Property portfolio: value, equity, NOI, debt, DSCR and a market watch for every metro you own in.",
+    nav=[
+        section("Portfolio", [
+            item("Dashboard", "real_estate.dashboard", "layout-dashboard"),
+            item("Properties", "real_estate.properties", "building-2"),
+            item("Issue Queue", "real_estate.issues", "triangle-alert", badge="re_issues"),
+            item("Debt", "real_estate.debt", "landmark"),
+            item("Markets", "real_estate.markets", "map"),
+            item("Portfolio Q&A", "real_estate.ai", "sparkles"),
+        ]),
+        section("System", [
+            item("Settings", "real_estate.settings", "settings"),
+        ]),
+    ])
 app("ir-portal", "IR Portal", "IR", "Investor Portal", "#2563eb",
     "What co-investors see: their entities, positions, documents, capital calls and messages.", fill=True)
 app("admin", "Admin", "AD", "Admin", "#0f172a",

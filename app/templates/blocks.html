@@ -20,7 +20,7 @@
 {% elif bl.type == 'html' %}{{ bl.html }}
 {% elif bl.type == 'form' %}
 <form method="post" action="{{ bl.action }}">{{ csrf() }}{% for name, label, typ, opt in bl.fields %}<div class="form-row"><label>{{ label }}</label><div>
-{% if typ == 'select' %}<select class="inp" name="{{ name }}">{% for v, l in opt %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+{% if typ == 'select' %}<select class="inp" name="{{ name }}">{% for o in opt %}<option value="{{ o[0] }}" {% if o|length > 2 and o[2] %}selected{% endif %}>{{ o[1] }}</option>{% endfor %}</select>
 {% elif typ == 'textarea' %}<textarea class="inp" name="{{ name }}">{{ opt or '' }}</textarea>
 {% elif typ == 'hidden' %}<input type="hidden" name="{{ name }}" value="{{ opt }}">
 {% else %}<input class="inp" type="{{ typ }}" name="{{ name }}" value="{{ opt if opt is not none else '' }}" {% if typ == 'number' %}step="any"{% endif %}>{% endif %}</div></div>{% endfor %}
