@@ -4,3 +4,4 @@ from .fo import *  # noqa
 from .pevc import *  # noqa
 from .tasks import *  # noqa
 from .deals import *  # noqa
+from .documents import *  # noqa

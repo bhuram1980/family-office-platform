@@ -3,7 +3,7 @@
 {% if bl.type == 'kpis' %}
 <div class="grid g{{ bl.cols }}">{% for k in bl['items'] %}<div class="kpi {{ 'top' if k.color }}" {% if k.color %}style="--kc:{{ k.color }}"{% endif %}><div class="kl">{{ k.label }}</div><div class="kv {{ k.tone }}">{{ k.value }}</div>{% if k.sub %}<div class="ks">{{ k.sub }}</div>{% endif %}</div>{% endfor %}</div>
 {% elif bl.type == 'row' %}
-<div class="grid {{ bl.cols }}">{% for x in bl.blocks %}<div style="min-width:0">{{ render_block(x) }}</div>{% endfor %}</div>
+<div class="grid {{ bl.cols }}">{% for x in bl.blocks %}<div style="min-width:0">{% if x is mapping %}{{ render_block(x) }}{% else %}{% for y in x %}{{ render_block(y) }}{% endfor %}{% endif %}</div>{% endfor %}</div>
 {% elif bl.type == 'card' %}
 <div class="card" style="margin-bottom:14px">{% if bl.title %}<div class="card-h"><div><h3>{{ bl.title }}</h3>{% if bl.sub %}<div class="csub">{{ bl.sub }}</div>{% endif %}</div>{% if bl.right %}<a class="right" href="{{ bl.right[1] }}">{{ bl.right[0] }}</a>{% endif %}</div>{% endif %}
 <div class="{{ 'card-b flush' if bl.flush else 'card-b' }}">{% for x in bl.body %}{{ render_block(x) }}{% endfor %}</div></div>

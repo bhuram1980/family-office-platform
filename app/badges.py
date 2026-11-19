@@ -62,3 +62,15 @@ def _tasks_mine():
 def _deal_followups():
     from .models import FollowUp
     return FollowUp.query.filter(FollowUp.done.is_(False), FollowUp.due <= date.today()).count()
+
+
+@badge("doc_inbox")
+def _doc_inbox():
+    from .models import Document
+    return Document.query.filter(Document.deleted_at.is_(None), Document.status == "Inbox").count()
+
+
+@badge("doc_flags")
+def _doc_flags():
+    from .models import Document
+    return Document.query.filter(Document.deleted_at.is_(None), Document.flagged.is_(True)).count()

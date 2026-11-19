@@ -8,6 +8,7 @@ class Config:
     ).replace("postgres://", "postgresql+psycopg://", 1).replace("postgresql://", "postgresql+psycopg://", 1)
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     BRAND = os.environ.get("BRAND", "Bhuram Family Office")
+    MAX_CONTENT_LENGTH = 15 * 1024 * 1024
     PERMANENT_SESSION_LIFETIME = 60 * 60 * 12
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"

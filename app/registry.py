@@ -157,7 +157,31 @@ app("pevc", "PE / VC", "PV", "PE / VC Monitor", "#059669",
         ]),
     ])
 app("documents", "Documents", "DC", "Documents", "#4f46e5",
-    "An inbox that reads statements and notices, proposes where each file belongs, and files it on approval.")
+    "An inbox that reads statements and notices, proposes where each file belongs, and files it on approval.",
+    nav=[
+        section("Intake", [
+            item("Inbox", "documents.inbox", "inbox", badge="doc_inbox"),
+            item("Dropbox", "documents.dropbox", "folder-sync"),
+            item("Emails", "documents.emails", "mail"),
+            item("Attachments", "documents.attachments", "paperclip"),
+        ]),
+        section("Library", [
+            item("Coverage", "documents.coverage", "folder-check"),
+            item("Recovery", "documents.recovery", "archive-restore"),
+            item("Deals", "documents.deals", "handshake"),
+            item("Tracker", "documents.tracker", "list-checks"),
+            item("Flags", "documents.flags", "flag", badge="doc_flags"),
+        ]),
+        section("Workflows", [
+            item("E-Signatures", "documents.esign", "pen-tool"),
+            item("Hiring", "documents.hiring", "user-plus"),
+        ]),
+        section("System", [
+            item("Agents", "documents.agents", "bot"),
+            item("Audit", "documents.audit_page", "scroll-text"),
+            item("Settings", "documents.settings", "settings"),
+        ]),
+    ])
 app("philanthropy", "Philanthropy", "PH", "Philanthropy", "#e11d48",
     "Family giving: grants, approvals, recipients, fund balance and reconciliation against the donor-advised fund.")
 app("tasks", "Tasks", "TK", "Tasks", "#2563eb",
