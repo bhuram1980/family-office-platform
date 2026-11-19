@@ -1,0 +1,10 @@
+.venv
+tests
+screenshots
+ci
+migrations/__pycache__
+**/__pycache__
+.deploy-credentials
+*.pyc
+Dockerfile
+docker-compose.yml

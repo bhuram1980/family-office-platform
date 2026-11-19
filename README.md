@@ -44,7 +44,7 @@ flask run                                 # http://127.0.0.1:5000
 
 ## Seeded accounts
 
-All seeded users share the password `bhuram-demo`. **Change these before exposing the app anywhere.**
+Locally, all seeded users share the password `bhuram-demo`. **Never expose that publicly**: `flask rotate-passwords --out FILE` gives every user a random password (written to FILE with mode 600, never printed). The public deployment uses rotated passwords.
 
 | Username | Role | Access |
 |---|---|---|
@@ -75,6 +75,15 @@ Roles: **super admin** (all apps, can create other super admins), **admin** (use
 ## Deploying
 
 GitHub Pages only serves static files, so it cannot run this app. Any host that runs a Python web process next to Postgres works.
+
+**Vercel** (how the live copy runs): the repo deploys as a Python (Flask) project with zero config. `wsgi.py` is the entrypoint, static files are served from `public/static` by the CDN, and `vercel.json` sets the function duration.
+1. Import the repo as a Vercel project and add a Postgres database (Neon from the Vercel Marketplace, or any Postgres). Use the pooled connection string as `DATABASE_URL`.
+2. Set `SECRET_KEY` to a long random string (the app refuses to start on Vercel without one).
+3. Vercel functions cannot run shell commands, so bootstrap the database once through a token-guarded endpoint: set `SETUP_TOKEN` (32+ random characters), redeploy, then
+   `curl -X POST https://<host>/_setup -H "Authorization: Bearer $SETUP_TOKEN" -H "Content-Type: application/json" -d '{"seed": true, "passwords": {"tirumala": "<new strong password>"}}'`.
+   It runs the migrations, loads the synthetic data and sets the given passwords. Then delete `SETUP_TOKEN` and redeploy; the route disappears.
+   If you can reach the database from your machine, `flask db upgrade && flask seed && flask rotate-passwords --out creds.txt` does the same.
+4. Uploads are capped at 4 MB on Vercel (the platform limit is 4.5 MB per request).
 
 **Render**: create a PostgreSQL instance, then a Web Service from this repo with
 - Build command: `pip install -r requirements.txt`

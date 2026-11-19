@@ -11,7 +11,8 @@ from .registry import APPS
 
 
 def create_app(config_object=Config):
-    app = Flask(__name__)
+    # Static files live in public/ so Vercel serves them from its CDN; Flask serves the same folder locally.
+    app = Flask(__name__, static_folder="../public/static", static_url_path="/static")
     app.config.from_object(config_object)
 
     db.init_app(app)
@@ -35,7 +36,7 @@ def create_app(config_object=Config):
 
     @app.before_request
     def check_csrf():
-        if request.method == "POST" and app.config.get("WTF_CSRF", True):
+        if request.method == "POST" and app.config.get("WTF_CSRF", True) and request.endpoint != "bootstrap":
             sent = request.form.get("csrf_token") or request.headers.get("X-CSRFToken")
             if not sent or sent != session.get("_csrf"):
                 abort(400, "CSRF token missing or invalid")
@@ -79,6 +80,8 @@ def create_app(config_object=Config):
 
     from .cli import register_cli
     register_cli(app)
+    from .setup_hook import register_setup
+    register_setup(app)
 
     @app.errorhandler(403)
     def forbidden(e):

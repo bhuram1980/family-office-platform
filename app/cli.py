@@ -43,3 +43,24 @@ def register_cli(app):
         db.session.add(u)
         db.session.commit()
         click.echo(f"Created {username} ({role}).")
+
+
+    @app.cli.command("rotate-passwords")
+    @click.option("--out", required=True, type=click.Path(), help="File to write the new passwords to (mode 600). Passwords are never printed.")
+    @with_appcontext
+    def rotate_passwords(out):
+        """Give every user a fresh random password, e.g. before a public deploy."""
+        import os
+        import secrets
+        from .models import User
+        lines = []
+        for u in User.query.order_by(User.id).all():
+            pw = secrets.token_urlsafe(18)
+            u.set_password(pw)
+            lines.append(f"{u.username}\t{u.role}\t{pw}")
+        db.session.commit()
+        fd = os.open(out, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            f.write("# username\trole\tpassword\n" + "\n".join(lines) + "\n")
+        os.chmod(out, 0o600)
+        click.echo(f"Rotated {len(lines)} passwords; written to {out}.")
