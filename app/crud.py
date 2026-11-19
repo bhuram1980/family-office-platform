@@ -85,7 +85,7 @@ class Resource:
     def __init__(self, app_id, slug, model, title, fields, singular=None,
                  order_by=None, search=None, filters=None, per_page=50,
                  subtitle=None, nav=None, row_link=None, readonly=False,
-                 query=None, extra_actions=None):
+                 query=None, extra_actions=None, summary=None, on_save=None):
         self.app_id = app_id
         self.slug = slug
         self.model = model
@@ -102,6 +102,8 @@ class Resource:
         self.readonly = readonly
         self.query = query
         self.extra_actions = extra_actions or []
+        self.summary = summary
+        self.on_save = on_save
         Resource.registry[(app_id, slug)] = self
 
     @property
@@ -140,8 +142,8 @@ class Resource:
             if val:
                 q = q.filter(getattr(self.model, fname) == val)
         sort = request.args.get("sort")
-        if sort and hasattr(self.model, sort.lstrip("-")):
-            col = getattr(self.model, sort.lstrip("-"))
+        col = getattr(self.model, sort.lstrip("-"), None) if sort else None
+        if col is not None and hasattr(col, "desc"):
             q = q.order_by(col.desc() if sort.startswith("-") else col.asc())
         elif self.order_by is not None:
             q = q.order_by(*(self.order_by if isinstance(self.order_by, (list, tuple)) else [self.order_by]))
@@ -162,9 +164,10 @@ class Resource:
     def view_export(self):
         out = io.StringIO()
         w = csv.writer(out)
-        w.writerow([f.label for f in self.fields])
+        cols = [f for f in self.fields if hasattr(self.model, f.name)]
+        w.writerow([f.label for f in cols])
         for o in self.filtered().all():
-            w.writerow([getattr(o, f.name) for f in self.fields])
+            w.writerow([getattr(o, f.name) for f in cols])
         audit(self.app_id, "export", self.slug, None, f"CSV export of {self.title}")
         db.session.commit()
         return Response(out.getvalue(), mimetype="text/csv",
@@ -198,6 +201,8 @@ class Resource:
                 return render_template("crud/form.html", r=self, obj=obj, values=request.form), 400
             if is_new:
                 db.session.add(obj)
+            if self.on_save:
+                self.on_save(obj, is_new)
             db.session.flush()
             audit(self.app_id, "create" if is_new else "update", self.slug, obj.id, str(obj))
             db.session.commit()

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "macros.html" import sort_th, pager, post_button %}
+{% from "blocks.html" import render_block with context %}
 {% set page_title = r.title %}
 {% set active_nav = r.nav or r.endpoint('list') %}
 {% block content %}
@@ -14,6 +15,7 @@
     {% if current_user.can_write and not r.readonly %}<a class="btn primary" href="{{ url_for(r.endpoint('new')) }}"><i class="ic" data-lucide="plus"></i>New {{ r.singular|lower }}</a>{% endif %}
   </div>
 </div>
+{% if r.summary %}{% for bl in r.summary() %}{{ render_block(bl) }}{% endfor %}{% endif %}
 {% for fname in r.filters %}
 <div class="chips"><span class="upper" style="margin-right:4px">{{ fname|replace('_',' ') }}</span>
   <a class="chip {{ 'on' if not request.args.get(fname) }}" href="?{{ qs(**{fname: None, 'page': None}) }}">All</a>

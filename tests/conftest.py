@@ -78,3 +78,12 @@ def static_get_routes(app, prefix):
         if "GET" in rule.methods and not rule.arguments and rule.rule.startswith(prefix) and not rule.rule.endswith(".csv"):
             out.append(rule.rule)
     return sorted(out)
+
+
+@pytest.fixture()
+def login_as(app):
+    def _login(username):
+        c = Client(app)
+        assert c.login(username).status_code == 302
+        return c
+    return _login

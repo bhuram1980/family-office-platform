@@ -1,0 +1,32 @@
+{% from "macros.html" import chartbox, post_button, csrf, field_input %}
+{% macro render_block(bl) %}
+{% if bl.type == 'kpis' %}
+<div class="grid g{{ bl.cols }}">{% for k in bl['items'] %}<div class="kpi {{ 'top' if k.color }}" {% if k.color %}style="--kc:{{ k.color }}"{% endif %}><div class="kl">{{ k.label }}</div><div class="kv {{ k.tone }}">{{ k.value }}</div>{% if k.sub %}<div class="ks">{{ k.sub }}</div>{% endif %}</div>{% endfor %}</div>
+{% elif bl.type == 'row' %}
+<div class="grid {{ bl.cols }}">{% for x in bl.blocks %}<div style="min-width:0">{{ render_block(x) }}</div>{% endfor %}</div>
+{% elif bl.type == 'card' %}
+<div class="card" style="margin-bottom:14px">{% if bl.title %}<div class="card-h"><div><h3>{{ bl.title }}</h3>{% if bl.sub %}<div class="csub">{{ bl.sub }}</div>{% endif %}</div>{% if bl.right %}<a class="right" href="{{ bl.right[1] }}">{{ bl.right[0] }}</a>{% endif %}</div>{% endif %}
+<div class="{{ 'card-b flush' if bl.flush else 'card-b' }}">{% for x in bl.body %}{{ render_block(x) }}{% endfor %}</div></div>
+{% elif bl.type == 'table' %}
+<div class="tbl-wrap" {% if bl.max_height %}style="max-height:{{ bl.max_height }}px;overflow:auto"{% endif %}><table class="t {{ 'sortable' if bl.sortable }} {{ 'compact' if bl.compact }}"><thead><tr>{% for c, al in bl.cols %}<th class="{{ al }}">{{ c }}</th>{% endfor %}</tr></thead><tbody>
+{% for r in bl.rows %}<tr>{% for cell in r %}<td class="{{ bl.cols[loop.index0][1] if loop.index0 < bl.cols|length }}">{{ cell if cell is not none else '—' }}</td>{% endfor %}</tr>{% else %}<tr><td colspan="{{ bl.cols|length }}"><div class="empty">{{ bl.empty }}</div></td></tr>{% endfor %}</tbody>
+{% if bl.foot %}<tfoot><tr>{% for cell in bl.foot %}<td class="{{ bl.cols[loop.index0][1] }}">{{ cell if cell is not none else '' }}</td>{% endfor %}</tr></tfoot>{% endif %}</table></div>
+{% elif bl.type == 'chart' %}{{ chartbox(bl.cfg, bl.h) }}
+{% elif bl.type == 'bars' %}
+{% set mx = (bl.rows|map(attribute=1)|max) if bl.rows else 1 %}{% for label, v in bl.rows %}<div style="padding:5px 0"><div class="split small"><span>{{ label }}</span><span class="mono">{{ v|money if bl.money else v }}</span></div><div class="bar" style="margin-top:4px"><i style="width:{{ (v / (mx or 1) * 100)|round(1) if v > 0 else 0 }}%;--bc:{{ bl.color }}"></i></div></div>{% endfor %}
+{% elif bl.type == 'list' %}
+<div class="list">{% for it in bl['items'] %}<div class="li">{% if it.dot %}<span class="dotc {{ it.dot }}"></span>{% endif %}<div style="min-width:0"><div class="lt">{{ it.title }}</div>{% if it.sub %}<div class="ls">{{ it.sub }}</div>{% endif %}</div>{% if it.right %}<div class="lr">{{ it.right }}</div>{% endif %}</div>{% else %}<div class="empty">{{ bl.empty }}</div>{% endfor %}</div>
+{% elif bl.type == 'note' %}<div class="note {{ bl.tone }}">{{ bl.text }}</div>
+{% elif bl.type == 'html' %}{{ bl.html }}
+{% elif bl.type == 'form' %}
+<form method="post" action="{{ bl.action }}">{{ csrf() }}{% for name, label, typ, opt in bl.fields %}<div class="form-row"><label>{{ label }}</label><div>
+{% if typ == 'select' %}<select class="inp" name="{{ name }}">{% for v, l in opt %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+{% elif typ == 'textarea' %}<textarea class="inp" name="{{ name }}">{{ opt or '' }}</textarea>
+{% elif typ == 'hidden' %}<input type="hidden" name="{{ name }}" value="{{ opt }}">
+{% else %}<input class="inp" type="{{ typ }}" name="{{ name }}" value="{{ opt if opt is not none else '' }}" {% if typ == 'number' %}step="any"{% endif %}>{% endif %}</div></div>{% endfor %}
+<div style="text-align:right;margin-top:10px"><button class="btn primary" {% if not current_user.can_write %}disabled{% endif %}>{{ bl.submit }}</button></div></form>
+{% elif bl.type == 'tabs' %}
+<div class="tabs" data-tabs="{{ bl.key }}">{% for t in bl['items'] %}<a href="?{{ qs(**{bl.key: t.slug}) }}" data-tab="{{ t.slug }}">{{ t.label }}</a>{% endfor %}</div>
+{% for t in bl['items'] %}<div class="tabpanel" data-group="{{ bl.key }}" data-tab="{{ t.slug }}">{% for x in t.blocks %}{{ render_block(x) }}{% endfor %}</div>{% endfor %}
+{% endif %}
+{% endmacro %}

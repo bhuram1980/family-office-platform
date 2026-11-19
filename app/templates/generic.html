@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "macros.html" import chartbox, post_button, csrf, field_input %}
+{% from "blocks.html" import render_block with context %}
+{% block topbar %}{% if topbar %}{{ topbar|safe }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="ph"><div>{% if back %}<a class="small" href="{{ back[1] }}">← {{ back[0] }}</a>{% endif %}<h1 {% if back %}style="margin-top:6px"{% endif %}>{{ page_title }}</h1>{% if sub %}<div class="sub">{{ sub }}</div>{% endif %}</div>
+<div class="acts">{% for a in actions %}{% if a[0] == 'post' %}{{ post_button(a[2], a[1], 'btn ' ~ (a[3] or ''), confirm=a[4] if a|length > 4 else None) }}{% elif a[0] == 'modal' %}<button class="btn {{ a[3] or '' }}" data-modal="{{ a[2] }}">{{ a[1] }}</button>{% else %}<a class="btn {{ a[2] if a|length > 2 else '' }}" href="{{ a[1] }}">{{ a[0] }}</a>{% endif %}{% endfor %}</div></div>
+{% for bl in blocks %}{{ render_block(bl) }}{% endfor %}
+{% endblock %}
