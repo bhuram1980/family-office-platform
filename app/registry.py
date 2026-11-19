@@ -129,7 +129,19 @@ app("family-office", "Family Office", "FO", "Family Office", "#0b1220",
         ], collapsible=True),
     ])
 app("deals", "Deal Evaluator", "DE", "Deal Evaluator", "#4f46e5",
-    "Screen, score and track every deal from first look to sign-off, with follow-ups and a full audit trail.")
+    "Screen, score and track every deal from first look to sign-off, with follow-ups and a full audit trail.",
+    nav=[
+        section("Deals", [
+            item("Home", "deals.dashboard", "home"),
+            item("Pipeline", "deals.pipeline", "kanban-square"),
+            item("Compare", "deals.compare", "git-compare"),
+            item("Follow-ups", "deals.followups", "bell-ring", badge="deal_followups"),
+            item("New Deal", "deals.deals_new", "plus"),
+        ]),
+        section("System", [
+            item("Settings", "deals.settings", "settings"),
+        ]),
+    ])
 app("pevc", "PE / VC", "PV", "PE / VC Monitor", "#059669",
     "Private-markets monitor: commitments, calls, NAV, TVPI and the documents behind every mark.",
     nav=[

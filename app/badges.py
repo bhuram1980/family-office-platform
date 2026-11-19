@@ -56,3 +56,9 @@ def _tasks_mine():
     from flask_login import current_user
     from .models import Task
     return Task.query.filter(Task.deleted_at.is_(None), Task.assignee_id == current_user.id, Task.status.notin_(["Done", "Canceled"])).count()
+
+
+@badge("deal_followups")
+def _deal_followups():
+    from .models import FollowUp
+    return FollowUp.query.filter(FollowUp.done.is_(False), FollowUp.due <= date.today()).count()
