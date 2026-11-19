@@ -2,18 +2,20 @@
 
 Ten connected apps for running a family office, built as one Flask application on one PostgreSQL database with a single sign-on:
 
-| App | Path | What it does |
+| App | Path | What works |
 |---|---|---|
-| Stocks | `/stocks/` | Multi-account equity book: positions from tax lots, FIFO trades, proposals → approval → booking, options, dividends, exposure, research board |
-| Family Office | `/family-office/` | Entities, investments, distributions, real estate, cash & treasury, loans, close, legal, reports, tax |
-| Deal Evaluator | `/deals/` | Pipeline board and table, scoring, follow-ups, sign-offs, deal pages |
-| PE / VC | `/pevc/` | Commitments, calls, NAV, TVPI, attention queue, portfolio-company financials |
-| Documents | `/documents/` | Inbox review queue, classification, filing, e-signatures, coverage |
-| Philanthropy | `/philanthropy/` | Grants, approvals, recipients, reconciliation, ledger |
-| Tasks | `/tasks/` | Kanban with sign-off columns, projects, recurring tasks, meetings |
-| Real Estate | `/real-estate/` | Properties, NOI, debt, DSCR, market watch, issue queue |
-| IR Portal | `/ir-portal/` | Co-investor view of entities, positions, documents, messages |
-| Admin | `/admin/` | Users, roles, app access, sign-in activity, API spend, audit, settings, health |
+| Stocks | `/stocks/` | Multi-account equity book: positions from tax lots, FIFO trades, trade proposals → admin approval → booking, options, dividends, exposure, P&L, research board, watchlist |
+| Family Office | `/family-office/` | Entities and org chart, investments, distributions, valuations, P&L, allocation, cash hub and forecast, wires with a two-person rule, bills, insurance, loans, month-end close checklist, legal, tax (K-1s, estimates), net-worth and capital-account reports |
+| Deal Evaluator | `/deals/` | Drag-and-drop pipeline and table, weighted scoring with editable weights, IC score gate, admin-only approve/pass, follow-ups, notes, side-by-side compare, convert an approved deal into a Family Office investment |
+| PE / VC | `/pevc/` | Commitments, calls, NAV, TVPI/DPI, J-curve, attention queue, portfolio-company operating metrics, GP updates inbox, document coverage by quarter |
+| Documents | `/documents/` | Upload/inbox, rules-based classifier, PDF preview, file-to-ledger (creates capital calls, distributions, PE/VC documents), approve/reject/flag, soft delete and recovery, Dropbox-style sync, document request tracker, e-signatures with signing order, audit |
+| Philanthropy | `/philanthropy/` | Grant requests, approvals (two admins above a threshold), payment from the DAF (ledger) or the Foundation (posts to Family Office cash), recipients directory, tuition, budgets by cause, reconciliation |
+| Tasks | `/tasks/` | Drag-and-drop Kanban with an admin-only sign-off column, comments, projects, recurring tasks that spawn on schedule, meetings with action items, deleted-task recovery |
+| Real Estate | `/real-estate/` | Properties with monthly operating data, NOI, DSCR, debt and rate-shock analysis, review workflow, rules engine that raises an issue queue, market watch map, rule-based Q&A |
+| IR Portal | `/ir-portal/` | Co-investor portal: holdings and NAV by investing profile, value history, properties owned, offerings with indicate/commit/withdraw, documents (marked viewed on download), messaging with the office, sign-in history. Staff can view as any investor, answer messages and manage offerings. Investors only ever see their own data |
+| Admin | `/admin/` | Users, roles, app access, unlock accounts, announcements, sign-in activity, API spend, credentials hints, audit log, settings, health |
+
+The apps share one database, so work done in one shows up in the others: an approved deal becomes a Family Office investment, a filed capital-call notice becomes a capital call, a Foundation grant payment is a cash transaction, Real Estate and Family Office share the same properties and loans, and IR Portal positions are valued from Family Office marks.
 
 Stack: Python 3.12+, Flask, SQLAlchemy 2, Flask-Migrate (Alembic), Flask-Login, PostgreSQL 16, Jinja templates with HTMX for in-place updates, Chart.js, gunicorn.
 
@@ -55,6 +57,10 @@ All seeded users share the password `bhuram-demo`. **Change these before exposin
 | `leah`, `omar` | Investor | IR Portal only |
 
 Roles: **super admin** (all apps, can create other super admins), **admin** (user management, approvals), **analyst** (read/write in granted apps), **viewer** (read-only), **investor** (IR Portal only). Five failed sign-ins lock an account; admins unlock it from Admin → Users.
+
+## Screenshots
+
+`screenshots/` holds the landing page (`landing.png`, `landing_full.png`) and each app dashboard as `tirumala`, plus the IR Portal as investor `leah` (`ir-portal_as_investor_leah.png`) and in office view (`ir-portal_office_view.png`).
 
 ## Commands
 
