@@ -230,7 +230,21 @@ app("real-estate", "Real Estate", "RE", "Real Estate", "#16a34a",
         ]),
     ])
 app("ir-portal", "IR Portal", "IR", "Investor Portal", "#2563eb",
-    "What co-investors see: their entities, positions, documents, capital calls and messages.", fill=True)
+    "What co-investors see: their entities, positions, documents, capital calls and messages.", fill=True,
+    nav=[
+        section("Portfolio", [
+            item("Home", "ir_portal.dashboard", "home"),
+            item("Investments", "ir_portal.investments", "briefcase"),
+            item("Sites", "ir_portal.sites", "map-pin"),
+            item("Profiles", "ir_portal.profiles", "id-card"),
+            item("Deals", "ir_portal.deals", "sparkles"),
+        ]),
+        section("Communication", [
+            item("Documents", "ir_portal.documents", "folder-open", badge="ir_docs"),
+            item("Messages", "ir_portal.messages", "message-square", badge="ir_msgs"),
+            item("Profile & security", "ir_portal.profile", "shield-check"),
+        ]),
+    ])
 app("admin", "Admin", "AD", "Admin", "#0f172a",
     "Platform administration: users, access, sign-in activity, API spend, credentials, audit and health.", fill=True,
     nav=[

@@ -65,7 +65,7 @@
     </div>
   </main>
 </div>
-<div class="env-pill">{{ BRAND }} · {{ current_user.role|replace('_',' ') }} · {% if current_user.can_write %}read/write{% else %}read-only{% endif %}</div>
+<div class="env-pill">{{ BRAND }} · {{ current_user.role|replace('_',' ') }} · {% if current_user.role == 'investor' %}own accounts only{% elif current_user.can_write %}read/write{% else %}read-only{% endif %}</div>
 <div id="toast" class="toast"></div>
 <script id="flashes" type="application/json">{{ get_flashed_messages(with_categories=true)|tojson }}</script>
 {% block scripts %}{% endblock %}

@@ -64,6 +64,8 @@ def create_app(config_object=Config):
 
     def announcements_active():
         from .models import Announcement
+        if getattr(current_user, "role", None) == "investor":
+            return []  # staff announcements are internal
         return Announcement.query.filter_by(active=True).order_by(Announcement.created_at.desc()).limit(2).all()
 
     # ---------------- blueprints ----------------

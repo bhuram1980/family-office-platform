@@ -80,3 +80,21 @@ def _doc_flags():
 def _ph_requests():
     from .models import Grant
     return Grant.query.filter_by(status="Requested").count()
+
+
+@badge("ir_msgs")
+def _ir_msgs():
+    from flask_login import current_user
+    from .models import IRMessage
+    if current_user.role == "investor":
+        return IRMessage.query.filter_by(investor_id=current_user.id, read_by_investor=False).count()
+    return IRMessage.query.filter_by(read_by_office=False).count()
+
+
+@badge("ir_docs")
+def _ir_docs():
+    from flask_login import current_user
+    from .models import InvestorProfile, IRDocument
+    if current_user.role != "investor":
+        return 0
+    return IRDocument.query.join(InvestorProfile).filter(InvestorProfile.user_id == current_user.id, IRDocument.viewed_at.is_(None)).count()
