@@ -121,7 +121,7 @@ def dashboard():
                                                                                 f"{p.tvpi:.2f}x" if p.tvpi else "—"] for p in sorted(pos, key=lambda x: -x.nav)], sortable=False),
                  right=("All →", u("investments")))),
         row(card("What's new", lst([(f"{newdocs} new document(s)", "Quarterly reports and tax forms", None, "blue" if newdocs else ""),
-                                    (f"{unread} unread message(s)", "From the Bhuram Family Office team", None, "blue" if unread else ""),
+                                    (f"{unread} unread message(s)", "From the Alladin Family Office team", None, "blue" if unread else ""),
                                     (f"{len(offs)} open co-investment(s)", "Limited allocations alongside the family", None, "")])),
             card("Open opportunities", lst([(o.title, f"{o.asset_class} · {o.location} · min ${o.min_check or 0:,.0f} · closes {o.target_close:%b %d}", None) for o in offs],
                                            empty="No open offerings."), right=("Deals →", u("deals")))),
@@ -152,7 +152,7 @@ def investment(pid):
         kpis([("Your NAV", M(p.nav)), ("Contributed", M(p.contributed)), ("Distributions", M(p.distributions)), ("TVPI", f"{p.tvpi:.2f}x" if p.tvpi else "—"),
               ("Your share", f"{p.ownership_pct:g}% of the family position")]),
         row(card("Value history (your share)", chart(line_chart([x.day.strftime("%b %y") for x in vals], {"NAV": [round(x.fmv * p.ownership_pct / 100) for x in vals]}, fill=True), 230)),
-            card("About", table(["", ""], [["Asset class", i.asset_class], ["Sector", i.sector or "—"], ["Sponsor", i.sponsor or "Bhuram Family Office"],
+            card("About", table(["", ""], [["Asset class", i.asset_class], ["Sector", i.sector or "—"], ["Sponsor", i.sponsor or "Alladin Family Office"],
                                            ["Location", f"{i.city or ''} {i.state or ''}"], ["Vintage", i.vintage or "—"], ["Profile", p.profile.name]], sortable=False))),
         card("Documents", table(["Document", "Period", ""], [[d.title, d.period, link("Download", u("doc_download", did=d.id))] for d in docs], empty="None yet.")),
     ], v, back=("Investments", u("investments")), active="ir_portal.investments")
@@ -305,7 +305,7 @@ def messages():
         f'<div style="display:flex;justify-content:{"flex-end" if m.from_id == v.id else "flex-start"};margin:8px 0"><div style="max-width:70%;background:{"#2563eb" if m.from_id == v.id else "#f1f5f9"};'
         f'color:{"#fff" if m.from_id == v.id else "inherit"};border-radius:12px;padding:10px 12px"><div class="small" style="opacity:.8"><b>{escape(m.sender.name if m.sender else "")}</b> · {m.at:%b %d, %H:%M} UTC'
         f'{" · " + str(escape(m.subject)) if m.subject else ""}</div><div style="white-space:pre-wrap">{escape(m.body)}</div></div></div>' for m in msgs)
-    return page("Messages", [card("Conversation with the Bhuram Family Office" if not is_staff() else f"Conversation with {v.name}", html(f'<div style="padding:8px 16px">{items or "No messages yet."}</div>')),
+    return page("Messages", [card("Conversation with the Alladin Family Office" if not is_staff() else f"Conversation with {v.name}", html(f'<div style="padding:8px 16px">{items or "No messages yet."}</div>')),
                              card("New message", form(u("messages"), [("subject", "Subject", "text", ""), ("body", "Message", "textarea", "")], submit="Send"), flush=False)], v)
 
 

@@ -141,7 +141,7 @@ def user_form(uid=None):
         audit("admin", "create" if new else "update", "users", u.id, f"{u.username} ({u.role}) apps={u.app_access}")
         if new:
             from ..models import EmailLog
-            db.session.add(EmailLog(to_addr=u.email, subject="Your Bhuram Family Office account", kind="invite"))
+            db.session.add(EmailLog(to_addr=u.email, subject="Your Alladin Family Office account", kind="invite"))
         db.session.commit()
         flash(f"User {u.username} {'created' if new else 'saved'}." + (f" Temporary password: {temp}" if temp else ""), "success")
         return redirect(url_for(".users"))

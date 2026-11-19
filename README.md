@@ -1,4 +1,4 @@
-# Bhuram Family Office platform
+# Alladin Family Office platform
 
 Ten connected apps for running a family office, built as one Flask application on one PostgreSQL database with a single sign-on:
 
@@ -44,7 +44,7 @@ flask run                                 # http://127.0.0.1:5000
 
 ## Seeded accounts
 
-Locally, all seeded users share the password `bhuram-demo`. **Never expose that publicly**: `flask rotate-passwords --out FILE` gives every user a random password (written to FILE with mode 600, never printed). The public deployment uses rotated passwords.
+Locally, all seeded users share the password `alladin-demo`. **Never expose that publicly**: `flask rotate-passwords --out FILE` gives every user a random password (written to FILE with mode 600, never printed). The public deployment uses rotated passwords.
 
 | Username | Role | Access |
 |---|---|---|

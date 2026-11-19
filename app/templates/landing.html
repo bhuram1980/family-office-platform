@@ -7,7 +7,7 @@
   {% if current_user.is_authenticated %}<a class="on" href="{{ url_for('public.launch') }}">Open platform</a>{% else %}<a class="on" href="{{ url_for('auth.login') }}">Sign in</a>{% endif %}</div>
 </div>
 <section class="hero">
-  <div class="eyebrow">Bhuram Family Office platform</div>
+  <div class="eyebrow">Alladin Family Office platform</div>
   <h1 class="serif">One system for everything the family office runs on</h1>
   <p class="lead">Ten connected apps for public equities, private investments, property, cash, deals, documents, giving and the team's work. They share one sign-in and one database, so each number is entered once and appears everywhere it's needed.</p>
   <div class="cta"><a class="btn primary lg" href="{{ url_for('stocks.dashboard') }}">Open the platform →</a><a class="btn lg" href="#apps">Explore the ten apps</a></div>
@@ -61,5 +61,5 @@
   {% for t, icon, d in shared %}<div class="c"><div class="i"><i data-lucide="{{ icon }}" style="width:16px;height:16px"></i></div><h4>{{ t }}</h4><p>{{ d }}</p></div>{% endfor %}
   </div>
 </section>
-<div class="foot"><span>© {{ today.year }} {{ BRAND }}</span><span>Synthetic data · built for Tirumala Bhuram</span></div>
+<div class="foot"><span>© {{ today.year }} {{ BRAND }}</span><span>Synthetic data · built for Tirumala</span></div>
 {% endblock %}

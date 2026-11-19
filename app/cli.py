@@ -64,3 +64,12 @@ def register_cli(app):
             f.write("# username\trole\tpassword\n" + "\n".join(lines) + "\n")
         os.chmod(out, 0o600)
         click.echo(f"Rotated {len(lines)} passwords; written to {out}.")
+
+
+    @app.cli.command("rebrand")
+    @with_appcontext
+    def rebrand_cmd():
+        """Apply services/rebrand.PAIRS to text already stored in the database."""
+        from .services.rebrand import rebrand
+        for col, n in rebrand().items():
+            click.echo(f"{col}: {n}")

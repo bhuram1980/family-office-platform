@@ -649,7 +649,7 @@ def charts():
 @bp.route("/settings/", methods=["GET", "POST"])
 def settings():
     keys = [("concentration_limit", "Single-name limit (% of long value)", "6"), ("margin_target", "Margin target (% of long value)", "30"),
-            ("daily_review_time", "Daily review email time (ET)", "07:30"), ("daily_review_to", "Daily review recipients", "tirumala@bhuram-fo.example, marcus@bhuram-fo.example"),
+            ("daily_review_time", "Daily review email time (ET)", "07:30"), ("daily_review_to", "Daily review recipients", "tirumala@alladin-fo.example, marcus@alladin-fo.example"),
             ("approval_threshold", "Trades above this $ need Super Admin approval", "250000")]
     if request.method == "POST":
         if not current_user.is_admin:

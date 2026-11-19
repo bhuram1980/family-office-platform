@@ -16,7 +16,7 @@ class Config:
         if ON_VERCEL else {"pool_pre_ping": True}
     )
     SESSION_COOKIE_SECURE = ON_VERCEL or os.environ.get("SESSION_COOKIE_SECURE") == "1"
-    BRAND = os.environ.get("BRAND", "Bhuram Family Office")
+    BRAND = os.environ.get("BRAND", "Alladin Family Office")
     MAX_CONTENT_LENGTH = (4 if os.environ.get("VERCEL") else 15) * 1024 * 1024  # Vercel caps request bodies at 4.5 MB
     PERMANENT_SESSION_LIFETIME = 60 * 60 * 12
     SESSION_COOKIE_HTTPONLY = True

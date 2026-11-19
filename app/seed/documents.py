@@ -44,7 +44,7 @@ def seed(ctx):
         n = tgt.name.split(" — ")[0] if tgt else ""
         amt = f"{rnd.randint(25, 2400) * 1000:,}"
         fn = t[0].format(n=n, q=q, y=date.today().year - 1, k=1000 + i, m=(date.today() - timedelta(days=30 * rnd.randint(1, 6))).strftime("%B %Y")).strip()
-        lines = [x.format(amt=amt) for x in t[2]] + [f"Prepared for Bhuram Family Office. Reference {rnd.randint(10000, 99999)}."]
+        lines = [x.format(amt=amt) for x in t[2]] + [f"Prepared for Alladin Family Office. Reference {rnd.randint(10000, 99999)}."]
         received = now - timedelta(days=rnd.randint(0, 120), hours=rnd.randint(0, 23))
         d = _doc(rnd, fn, t[1], lines, rnd.choice(["Email", "Email", "Dropbox", "Portal", "Upload"]), received)
         if d.source == "Dropbox":
@@ -71,7 +71,7 @@ def seed(ctx):
         db.session.add(e)
         db.session.flush()
         d.email_id = e.id
-    people = [("Priya Raman", "priya@bhuram-fo.example"), ("Tirumala Bhuram", "tirumala@bhuram-fo.example"), ("Jordan Ellis (counsel)", "jellis@counsel-example.com"),
+    people = [("Priya Raman", "priya@alladin-fo.example"), ("Tirumala", "tirumala@alladin-fo.example"), ("Jordan Ellis (counsel)", "jellis@counsel-example.com"),
               ("Mara Quinn (GP)", "mquinn@gp-example.com")]
     for k, (title, stt) in enumerate([("Subscription agreement — Harborline Logistics co-invest", "Sent"), ("Side letter — Tidewater Fund IV", "Signed"),
                                       ("Engagement letter — 2026 tax compliance", "Signed"), ("Ironwood refinance — loan documents", "Sent"),

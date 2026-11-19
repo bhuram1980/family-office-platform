@@ -31,7 +31,7 @@ def test_bad_password(client):
 
 
 def test_csrf_enforced(client):
-    r = client.c.post("/login", data={"username": "tirumala", "password": "bhuram-demo"})
+    r = client.c.post("/login", data={"username": "tirumala", "password": "alladin-demo"})
     assert r.status_code == 400
 
 

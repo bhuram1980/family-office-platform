@@ -101,12 +101,12 @@ CMG|Chipotle|Consumer Discretionary|Quality Compounders|58|1.1|52|0|14
 TTD|The Trade Desk|Technology|AI Software|119|1.6|190|0|26
 RKLB|Rocket Lab|Industrials|Aerospace|23|2.1|0|0|52"""
 
-ACCOUNTS = [("Bhuram Family Trust", "BFT", "Bhuram Family Trust", "Charles Schwab", "Taxable"),
-            ("Bhuram Growth Trust", "BGT", "Bhuram Growth Trust", "Fidelity", "Taxable"),
-            ("Bhuram Holdings LLC", "BHL", "Bhuram Holdings LLC", "Interactive Brokers", "Taxable · Margin"),
-            ("Bhuram Foundation", "BFN", "Bhuram Foundation", "Morgan Stanley", "Tax-exempt"),
-            ("Roth IRA — T. Bhuram", "RIRA", "Tirumala Bhuram", "Fidelity", "Retirement"),
-            ("Rollover IRA — T. Bhuram", "TIRA", "Tirumala Bhuram", "Charles Schwab", "Retirement")]
+ACCOUNTS = [("Alladin Family Trust", "BFT", "Alladin Family Trust", "Charles Schwab", "Taxable"),
+            ("Alladin Growth Trust", "BGT", "Alladin Growth Trust", "Fidelity", "Taxable"),
+            ("Alladin Holdings LLC", "BHL", "Alladin Holdings LLC", "Interactive Brokers", "Taxable · Margin"),
+            ("Alladin Foundation", "BFN", "Alladin Foundation", "Morgan Stanley", "Tax-exempt"),
+            ("Roth IRA — Tirumala", "RIRA", "Tirumala", "Fidelity", "Retirement"),
+            ("Rollover IRA — Tirumala", "TIRA", "Tirumala", "Charles Schwab", "Retirement")]
 
 CATEGORY = {"Cash": "Money Market", "Commodities": "Alternative Inv.", "Alternatives": "Alternative Inv."}
 
@@ -222,7 +222,7 @@ def seed(ctx):
             db.session.add(StockTxn(account=a, day=d, kind="INT", amount=amt, note="Margin interest" if amt < 0 else "Sweep interest"))
         elif kind in ("DEP", "WD"):
             db.session.add(StockTxn(account=a, day=d, kind=kind, amount=round(rnd.uniform(50, 750)) * 1000 * (1 if kind == "DEP" else -1),
-                                    note="Wire from operating account" if kind == "DEP" else "Wire to Bhuram Holdings operating"))
+                                    note="Wire from operating account" if kind == "DEP" else "Wire to Alladin Holdings operating"))
         else:
             db.session.add(StockTxn(account=a, day=d, kind="FEE", amount=-round(rnd.uniform(150, 6200), 2),
                                     note=rnd.choice(["Advisory fee", "ADR custody fee", "Wire fee", "Foreign tax withheld"])))

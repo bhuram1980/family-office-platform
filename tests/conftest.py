@@ -55,7 +55,7 @@ class Client:
         finally:
             self._fresh()
 
-    def login(self, username, password="bhuram-demo"):
+    def login(self, username, password="alladin-demo"):
         return self.post("/login", {"username": username, "password": password})
 
 

@@ -1,4 +1,4 @@
-"""Synthetic giving history for the Bhuram Foundation."""
+"""Synthetic giving history for the Alladin Foundation."""
 from datetime import date, timedelta
 
 from ..extensions import db
@@ -63,7 +63,7 @@ def seed(ctx):
         db.session.flush()
         if stt == "Paid" and g.source == "DAF" and g.paid_on <= today:
             db.session.add(DAFTxn(day=g.paid_on + timedelta(days=rnd.randint(0, 4)), kind="Grant", amount=-amt, memo=f"Grant to {r.name}", grant_id=g.id if g.reconciled else None))
-    kids = ["Anika Bhuram", "Rohan Bhuram"]
+    kids = ["Anika Alladin", "Rohan Alladin"]
     for y in (today.year - 1, today.year):
         for term, mo in (("Fall", 8), ("Spring", 1)):
             for kid, sch in zip(kids, schools):

@@ -32,6 +32,10 @@ def register_setup(app):
             run(reset=True)
             stamp(directory=MIGRATIONS)
             done.append("seeded")
+        if body.get("rebrand"):
+            from .services.rebrand import rebrand
+            changed = rebrand()
+            done.append(f"rebranded {sum(changed.values())} values in {len(changed)} columns")
         pw = body.get("passwords") or {}
         if pw:
             from .models import User

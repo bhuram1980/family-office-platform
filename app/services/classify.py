@@ -19,7 +19,7 @@ RULES = [
     ("Tax", ["form 1065", "1041", "estimated tax", "irs", "franchise tax"], "family-office"),
     ("Legal", ["operating agreement", "trust deed", "resolution", "amendment"], "family-office"),
 ]
-STOP = {"the", "fund", "partners", "capital", "llc", "lp", "inc", "holdings", "group", "series", "and", "company", "co", "trust", "family", "bhuram", "services", "fund", "group", "statement", "notice", "report"}
+STOP = {"the", "fund", "partners", "capital", "llc", "lp", "inc", "holdings", "group", "series", "and", "company", "co", "trust", "family", "alladin", "services", "fund", "group", "statement", "notice", "report"}
 
 
 def _tokens(s):

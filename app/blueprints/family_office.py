@@ -177,7 +177,7 @@ Resource("family-office", "loans", Loan, "Loans", [
 
 Resource("family-office", "shared-expenses", SharedExpense, "Shared Expenses", [
     F("day", "Date", type="date"), F("vendor", required=True), F("description"), F("total", type="money", required=True),
-    F("allocation", help="Entity:percent pairs separated by semicolons, e.g. Bhuram Holdings LLC:60; Bhuram Real Estate LP:40"), F("settled", type="bool"),
+    F("allocation", help="Entity:percent pairs separated by semicolons, e.g. Alladin Holdings LLC:60; Alladin Real Estate LP:40"), F("settled", type="bool"),
 ], singular="Shared expense", order_by=SharedExpense.day.desc(), summary=_shared_summary).register(bp)
 
 Resource("family-office", "transactions", CashTxn, "Transactions", [

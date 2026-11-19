@@ -36,7 +36,7 @@ def seed(ctx):
                 q = f"{today.year}Q{max(1, (today.month - 1) // 3)}"
                 db.session.add(IRDocument(profile_id=p.id, investment_id=inv.id, title=f"{inv.name} — {q} investor report", kind="Quarterly report", period=q,
                                           content=make_pdf(f"{inv.name} — {q} Investor Report", [f"Prepared for {p.name}", f"Ownership {pct}% of the family position",
-                                                                                                 f"Net asset value ${pos.contributed * 1.2:,.0f} (estimate)", "Bhuram Family Office"])))
+                                                                                                 f"Net asset value ${pos.contributed * 1.2:,.0f} (estimate)", "Alladin Family Office"])))
                 db.session.add(IRDocument(profile_id=p.id, investment_id=inv.id, title=f"{inv.name} — {today.year - 1} Schedule K-1", kind="K-1", period=str(today.year - 1),
                                           content=make_pdf("Schedule K-1 (Form 1065)", [f"Partner: {p.name}", f"Investment: {inv.name}", "Tax year " + str(today.year - 1)]),
                                           viewed_at=datetime.utcnow() - timedelta(days=20) if rnd.random() < 0.5 else None))

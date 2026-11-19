@@ -9,16 +9,16 @@ from ..models import (Entity, Investment, Distribution, CapitalCall, Valuation, 
 
 ENTITIES = [
     # name, kind, parent, pct, jurisdiction, purpose
-    ("Bhuram Family Trust", "Trust", None, 100, "SD", "Top-level dynasty trust holding family assets"),
-    ("Bhuram Holdings LLC", "LLC", "Bhuram Family Trust", 100, "DE", "Operating holding company; employs office staff"),
-    ("Bhuram Growth Trust", "Trust", "Bhuram Family Trust", 100, "SD", "Long-horizon growth assets for the next generation"),
-    ("Bhuram Real Estate LP", "LP", "Bhuram Holdings LLC", 100, "DE", "Owns property-level SPVs"),
-    ("Bhuram Ventures LLC", "LLC", "Bhuram Growth Trust", 100, "DE", "Venture and growth equity commitments"),
-    ("Bhuram Credit Partners LP", "LP", "Bhuram Holdings LLC", 100, "DE", "Private credit and notes receivable"),
-    ("Bhuram Foundation", "Foundation", None, 100, "NC", "Private foundation; grants via donor-advised fund"),
-    ("Tirumala Bhuram", "Individual", None, 100, "NC", "Principal"),
-    ("Kaveri Bhuram 2019 Trust", "Trust", "Bhuram Family Trust", 100, "SD", "GST-exempt trust for children"),
-    ("Bhuram Aviation LLC", "LLC", "Bhuram Holdings LLC", 100, "DE", "Fractional aircraft interest and related costs"),
+    ("Alladin Family Trust", "Trust", None, 100, "SD", "Top-level dynasty trust holding family assets"),
+    ("Alladin Holdings LLC", "LLC", "Alladin Family Trust", 100, "DE", "Operating holding company; employs office staff"),
+    ("Alladin Growth Trust", "Trust", "Alladin Family Trust", 100, "SD", "Long-horizon growth assets for the next generation"),
+    ("Alladin Real Estate LP", "LP", "Alladin Holdings LLC", 100, "DE", "Owns property-level SPVs"),
+    ("Alladin Ventures LLC", "LLC", "Alladin Growth Trust", 100, "DE", "Venture and growth equity commitments"),
+    ("Alladin Credit Partners LP", "LP", "Alladin Holdings LLC", 100, "DE", "Private credit and notes receivable"),
+    ("Alladin Foundation", "Foundation", None, 100, "NC", "Private foundation; grants via donor-advised fund"),
+    ("Tirumala", "Individual", None, 100, "NC", "Principal"),
+    ("Kaveri Alladin 2019 Trust", "Trust", "Alladin Family Trust", 100, "SD", "GST-exempt trust for children"),
+    ("Alladin Aviation LLC", "LLC", "Alladin Holdings LLC", 100, "DE", "Fractional aircraft interest and related costs"),
 ]
 
 METROS = [("Raleigh", "NC", 2.1, 4.4, 2.6, 6.2, 3.1), ("Dallas", "TX", 1.8, 2.9, 2.2, -4.5, 1.2), ("Charleston", "SC", 2.4, 5.1, 2.9, 11.8, 3.9),
@@ -117,7 +117,7 @@ def seed(ctx):
         e = Entity(name=name, kind=kind, parent=ents.get(parent), ownership_pct=pct, jurisdiction=jur, purpose=purpose,
                    ein_hint=f"**-***{rnd.randint(1000, 9999)}" if kind != "Individual" else None,
                    formed=date(rnd.randint(2004, 2020), rnd.randint(1, 12), rnd.randint(1, 28)),
-                   manager="Bhuram Holdings LLC" if kind in ("LLC", "LP") else "Tirumala Bhuram")
+                   manager="Alladin Holdings LLC" if kind in ("LLC", "LP") else "Tirumala")
         ents[name] = e
         db.session.add(e)
     db.session.flush()
@@ -129,7 +129,7 @@ def seed(ctx):
         db.session.add(Metro(name=name, state=st, pop_yoy=pop, hpi_yoy=hpi, emp_yoy=emp, permits_yoy=permits, rent_yoy=rent, score=min(score, 95)))
 
     # ---------- real estate
-    re_ent = ents["Bhuram Real Estate LP"]
+    re_ent = ents["Alladin Real Estate LP"]
     props = []
     for (name, kind, city, st, units, sqft, price, yrs, mult, occ) in PROPS:
         acq = today - timedelta(days=int(yrs * 365))
@@ -137,7 +137,7 @@ def seed(ctx):
         rev = price * rnd.uniform(.085, .12) if kind != "Land" else 0
         opex = rev * rnd.uniform(.36, .52)
         noi = rev - opex
-        inv = Investment(name=name, entity=re_ent, asset_class="Real Estate", deal_type="Direct", sponsor="Bhuram Real Estate LP", sector=kind,
+        inv = Investment(name=name, entity=re_ent, asset_class="Real Estate", deal_type="Direct", sponsor="Alladin Real Estate LP", sector=kind,
                          vintage=acq.year, commitment=price * .35, invested=round(price * .35, -3), fmv=0, distributions=0, city=city, state=st,
                          lat=COORD[city][0] + rnd.uniform(-.05, .05), lon=COORD[city][1] + rnd.uniform(-.05, .05), target_irr=rnd.choice([12, 14, 15, 16]),
                          target_moic=rnd.choice([1.7, 1.8, 2.0]), hold_years=rnd.choice([5, 7, 10]), pref_return=8, promote=20, mgmt_fee=1.0,
@@ -177,7 +177,7 @@ def seed(ctx):
 
     # ---------- private investments
     invs = []
-    pe_ent = {"Venture Capital": ents["Bhuram Ventures LLC"], "Private Equity": ents["Bhuram Growth Trust"]}
+    pe_ent = {"Venture Capital": ents["Alladin Ventures LLC"], "Private Equity": ents["Alladin Growth Trust"]}
     for name, ac, dt, sector, vin, inv_k, navm, distm, city in PRIVATE:
         if inv_k == 0:
             continue
@@ -197,13 +197,13 @@ def seed(ctx):
         invs.append(i)
         db.session.add(i)
     for name, inv, fmv, dist in CREDIT:
-        db.session.add(Investment(name=name, entity=ents["Bhuram Credit Partners LP"], asset_class="Private Credit", deal_type="Direct", sector="Credit",
+        db.session.add(Investment(name=name, entity=ents["Alladin Credit Partners LP"], asset_class="Private Credit", deal_type="Direct", sector="Credit",
                                   vintage=rnd.randint(2020, 2024), commitment=inv, invested=inv, fmv=fmv, distributions=dist, target_irr=11, last_mark=today - timedelta(days=30)))
     for name, ac, inv, fmv in OTHER:
-        db.session.add(Investment(name=name, entity=ents["Bhuram Holdings LLC"], asset_class=ac, deal_type="Direct", sector=ac, vintage=rnd.randint(2016, 2022),
+        db.session.add(Investment(name=name, entity=ents["Alladin Holdings LLC"], asset_class=ac, deal_type="Direct", sector=ac, vintage=rnd.randint(2016, 2022),
                                   commitment=inv, invested=inv, fmv=fmv, distributions=0, marketable=ac == "Hedge Funds", last_mark=today - timedelta(days=45)))
-    for name, ent, inv, fmv in [("Schwab equity sleeve", "Bhuram Family Trust", 52_000_000, 0), ("Fidelity growth sleeve", "Bhuram Growth Trust", 31_000_000, 0),
-                                ("IBKR concentrated sleeve", "Bhuram Holdings LLC", 26_000_000, 0)]:
+    for name, ent, inv, fmv in [("Schwab equity sleeve", "Alladin Family Trust", 52_000_000, 0), ("Fidelity growth sleeve", "Alladin Growth Trust", 31_000_000, 0),
+                                ("IBKR concentrated sleeve", "Alladin Holdings LLC", 26_000_000, 0)]:
         db.session.add(Investment(name=name, entity=ents[ent], asset_class="Public Equities", deal_type="Separate account", sector="Public markets",
                                   vintage=2015, commitment=inv, invested=inv, fmv=fmv, marketable=True, notes="FMV is pulled live from the Stocks app"))
     sold = [("Lakewood Senior Living", "Real Estate", 2016, 6_200_000, 11_900_000, today - timedelta(days=410)),
@@ -212,7 +212,7 @@ def seed(ctx):
             ("Signal Hill Software", "Venture Capital", 2018, 1_500_000, 6_300_000, today - timedelta(days=300)),
             ("Fairway Storage Portfolio", "Real Estate", 2017, 3_800_000, 5_200_000, today - timedelta(days=150))]
     for name, ac, vin, inv, proceeds, sd in sold:
-        db.session.add(Investment(name=name, entity=ents["Bhuram Holdings LLC"], asset_class=ac, deal_type="Direct", vintage=vin, commitment=inv, invested=inv,
+        db.session.add(Investment(name=name, entity=ents["Alladin Holdings LLC"], asset_class=ac, deal_type="Direct", vintage=vin, commitment=inv, invested=inv,
                                   fmv=0, distributions=proceeds, status="Sold", sold_on=sd, sector=ac))
     db.session.flush()
     ctx["private"] = invs
@@ -238,22 +238,22 @@ def seed(ctx):
 
     # ---------- loans (non-mortgage)
     db.session.add_all([
-        Loan(name="Note receivable — Palmer Industrial bridge", kind="Note receivable", direction="receivable", lender="Bhuram Credit Partners LP", borrower="Palmer Industrial Holdings",
-             entity=ents["Bhuram Credit Partners LP"], principal=2_800_000, balance=2_800_000, rate=11.0, originated=today - timedelta(days=200), maturity=today + timedelta(days=165), annual_debt_service=308_000),
-        Loan(name="Note receivable — family member home loan", kind="Note receivable", direction="receivable", lender="Bhuram Family Trust", borrower="R. Bhuram",
-             entity=ents["Bhuram Family Trust"], principal=1_200_000, balance=1_046_000, rate=4.27, originated=today - timedelta(days=900), maturity=today + timedelta(days=4500), annual_debt_service=74_000),
-        Loan(name="Seller note — Brightline Pet Brands", kind="Note receivable", direction="receivable", lender="Bhuram Holdings LLC", borrower="Brightline Acquisition Co",
-             entity=ents["Bhuram Holdings LLC"], principal=1_500_000, balance=900_000, rate=8.0, originated=today - timedelta(days=640), maturity=today + timedelta(days=455), annual_debt_service=420_000, status="Watch"),
-        Loan(name="Securities-based line — Schwab", kind="Line of credit", direction="payable", lender="Charles Schwab Bank", borrower="Bhuram Family Trust",
-             entity=ents["Bhuram Family Trust"], principal=10_000_000, balance=3_400_000, rate=6.35, rate_type="Floating", originated=today - timedelta(days=700), maturity=today + timedelta(days=330), annual_debt_service=215_900),
-        Loan(name="Aircraft loan", kind="Note payable", direction="payable", lender="Bank of the Carolinas", borrower="Bhuram Aviation LLC",
-             entity=ents["Bhuram Aviation LLC"], principal=1_800_000, balance=1_120_000, rate=5.1, originated=today - timedelta(days=1300), maturity=today + timedelta(days=1100), annual_debt_service=290_000),
-        Loan(name="Intercompany — Holdings to Real Estate LP", kind="Intercompany", direction="receivable", lender="Bhuram Holdings LLC", borrower="Bhuram Real Estate LP",
-             entity=ents["Bhuram Holdings LLC"], counterparty_entity=ents["Bhuram Real Estate LP"], principal=4_500_000, balance=3_850_000, rate=4.5, originated=today - timedelta(days=800), maturity=today + timedelta(days=1000)),
-        Loan(name="Intercompany — Family Trust to Ventures", kind="Intercompany", direction="receivable", lender="Bhuram Family Trust", borrower="Bhuram Ventures LLC",
-             entity=ents["Bhuram Family Trust"], counterparty_entity=ents["Bhuram Ventures LLC"], principal=6_000_000, balance=6_000_000, rate=4.1, originated=today - timedelta(days=420), maturity=today + timedelta(days=2500)),
-        Loan(name="Intercompany — Holdings to Aviation", kind="Intercompany", direction="receivable", lender="Bhuram Holdings LLC", borrower="Bhuram Aviation LLC",
-             entity=ents["Bhuram Holdings LLC"], counterparty_entity=ents["Bhuram Aviation LLC"], principal=750_000, balance=610_000, rate=4.5, originated=today - timedelta(days=500), maturity=today + timedelta(days=600)),
+        Loan(name="Note receivable — Palmer Industrial bridge", kind="Note receivable", direction="receivable", lender="Alladin Credit Partners LP", borrower="Palmer Industrial Holdings",
+             entity=ents["Alladin Credit Partners LP"], principal=2_800_000, balance=2_800_000, rate=11.0, originated=today - timedelta(days=200), maturity=today + timedelta(days=165), annual_debt_service=308_000),
+        Loan(name="Note receivable — family member home loan", kind="Note receivable", direction="receivable", lender="Alladin Family Trust", borrower="R. Alladin",
+             entity=ents["Alladin Family Trust"], principal=1_200_000, balance=1_046_000, rate=4.27, originated=today - timedelta(days=900), maturity=today + timedelta(days=4500), annual_debt_service=74_000),
+        Loan(name="Seller note — Brightline Pet Brands", kind="Note receivable", direction="receivable", lender="Alladin Holdings LLC", borrower="Brightline Acquisition Co",
+             entity=ents["Alladin Holdings LLC"], principal=1_500_000, balance=900_000, rate=8.0, originated=today - timedelta(days=640), maturity=today + timedelta(days=455), annual_debt_service=420_000, status="Watch"),
+        Loan(name="Securities-based line — Schwab", kind="Line of credit", direction="payable", lender="Charles Schwab Bank", borrower="Alladin Family Trust",
+             entity=ents["Alladin Family Trust"], principal=10_000_000, balance=3_400_000, rate=6.35, rate_type="Floating", originated=today - timedelta(days=700), maturity=today + timedelta(days=330), annual_debt_service=215_900),
+        Loan(name="Aircraft loan", kind="Note payable", direction="payable", lender="Bank of the Carolinas", borrower="Alladin Aviation LLC",
+             entity=ents["Alladin Aviation LLC"], principal=1_800_000, balance=1_120_000, rate=5.1, originated=today - timedelta(days=1300), maturity=today + timedelta(days=1100), annual_debt_service=290_000),
+        Loan(name="Intercompany — Holdings to Real Estate LP", kind="Intercompany", direction="receivable", lender="Alladin Holdings LLC", borrower="Alladin Real Estate LP",
+             entity=ents["Alladin Holdings LLC"], counterparty_entity=ents["Alladin Real Estate LP"], principal=4_500_000, balance=3_850_000, rate=4.5, originated=today - timedelta(days=800), maturity=today + timedelta(days=1000)),
+        Loan(name="Intercompany — Family Trust to Ventures", kind="Intercompany", direction="receivable", lender="Alladin Family Trust", borrower="Alladin Ventures LLC",
+             entity=ents["Alladin Family Trust"], counterparty_entity=ents["Alladin Ventures LLC"], principal=6_000_000, balance=6_000_000, rate=4.1, originated=today - timedelta(days=420), maturity=today + timedelta(days=2500)),
+        Loan(name="Intercompany — Holdings to Aviation", kind="Intercompany", direction="receivable", lender="Alladin Holdings LLC", borrower="Alladin Aviation LLC",
+             entity=ents["Alladin Holdings LLC"], counterparty_entity=ents["Alladin Aviation LLC"], principal=750_000, balance=610_000, rate=4.5, originated=today - timedelta(days=500), maturity=today + timedelta(days=600)),
     ])
 
     db.session.add_all([
@@ -264,12 +264,12 @@ def seed(ctx):
     # ---------- cash
     banks = []
     for name, inst, ent, kind, bal, rate in [
-        ("Holdings operating", "First Citizens", "Bhuram Holdings LLC", "Operating", 1_840_000, 0.5), ("Holdings money market", "First Citizens", "Bhuram Holdings LLC", "Money market", 4_200_000, 4.1),
-        ("Family Trust operating", "JPMorgan", "Bhuram Family Trust", "Operating", 960_000, 0.2), ("Family Trust treasury", "JPMorgan", "Bhuram Family Trust", "Treasury", 6_800_000, 4.4),
-        ("Real Estate LP operating", "Truist", "Bhuram Real Estate LP", "Operating", 1_310_000, 0.3), ("Real Estate reserves", "Truist", "Bhuram Real Estate LP", "Escrow", 2_240_000, 3.2),
-        ("Ventures operating", "Silicon Valley Bank", "Bhuram Ventures LLC", "Operating", 720_000, 0.4), ("Credit Partners operating", "PNC", "Bhuram Credit Partners LP", "Operating", 1_050_000, 0.4),
-        ("Foundation operating", "Bank of America", "Bhuram Foundation", "Operating", 410_000, 0.1), ("Personal checking", "JPMorgan", "Tirumala Bhuram", "Operating", 285_000, 0.0),
-        ("Aviation operating", "First Citizens", "Bhuram Aviation LLC", "Operating", 140_000, 0.0)]:
+        ("Holdings operating", "First Citizens", "Alladin Holdings LLC", "Operating", 1_840_000, 0.5), ("Holdings money market", "First Citizens", "Alladin Holdings LLC", "Money market", 4_200_000, 4.1),
+        ("Family Trust operating", "JPMorgan", "Alladin Family Trust", "Operating", 960_000, 0.2), ("Family Trust treasury", "JPMorgan", "Alladin Family Trust", "Treasury", 6_800_000, 4.4),
+        ("Real Estate LP operating", "Truist", "Alladin Real Estate LP", "Operating", 1_310_000, 0.3), ("Real Estate reserves", "Truist", "Alladin Real Estate LP", "Escrow", 2_240_000, 3.2),
+        ("Ventures operating", "Silicon Valley Bank", "Alladin Ventures LLC", "Operating", 720_000, 0.4), ("Credit Partners operating", "PNC", "Alladin Credit Partners LP", "Operating", 1_050_000, 0.4),
+        ("Foundation operating", "Bank of America", "Alladin Foundation", "Operating", 410_000, 0.1), ("Personal checking", "JPMorgan", "Tirumala", "Operating", 285_000, 0.0),
+        ("Aviation operating", "First Citizens", "Alladin Aviation LLC", "Operating", 140_000, 0.0)]:
         ba = BankAccount(name=name, institution=inst, entity=ents[ent], kind=kind, last4=str(rnd.randint(1000, 9999)), balance=bal, rate=rate,
                          min_balance=round(bal * .1, -4), statement_balance=bal)
         banks.append(ba)
@@ -277,7 +277,7 @@ def seed(ctx):
     db.session.flush()
     cats_in = [("Distribution", "fund"), ("Rent / NOI sweep", "property"), ("Interest income", "bank"), ("Note payment received", "note")]
     cats_out = [("Payroll", "Gusto"), ("Professional fees", "Hale & Whitlock LLP"), ("Capital call", "fund"), ("Insurance", "Chubb"), ("Property tax", "County Tax Collector"),
-                ("Travel", "NetJets"), ("Household", "Estate staff"), ("Software", "Various SaaS"), ("Charitable", "Bhuram Foundation DAF"), ("Debt service", "Lender")]
+                ("Travel", "NetJets"), ("Household", "Estate staff"), ("Software", "Various SaaS"), ("Charitable", "Alladin Foundation DAF"), ("Debt service", "Lender")]
     pnames = [p.name for p in props] + [i.name for i in invs[:12]]
     for k in range(560):
         ba = rnd.choice(banks)
@@ -293,29 +293,29 @@ def seed(ctx):
         db.session.add(CashTxn(bank_account=ba, day=d, amount=amt, category=cat, counterparty=cp,
                                memo=f"{cat} — {d:%b %Y}", reconciled=(today - d).days > 25 or rnd.random() < .4))
     for payee, cat, ent, amt, dd, st in [
-        ("Chubb Personal Risk", "Insurance", "Bhuram Holdings LLC", 48_200, 4, "Open"), ("Mecklenburg County", "Property tax", "Bhuram Real Estate LP", 128_400, 12, "Approved"),
-        ("Hale & Whitlock LLP", "Legal", "Bhuram Family Trust", 22_850, -6, "Open"), ("Cardinal Property Mgmt", "Property management", "Bhuram Real Estate LP", 18_300, 2, "Open"),
-        ("Duke Energy", "Utilities", "Bhuram Holdings LLC", 3_120, -2, "Open"), ("Altitude Jet Services", "Aviation", "Bhuram Aviation LLC", 36_900, 9, "Open"),
-        ("Ridgeway CPA Group", "Tax prep", "Bhuram Holdings LLC", 41_000, 21, "Open"), ("Northbridge IT", "Technology", "Bhuram Holdings LLC", 6_480, 1, "Approved"),
-        ("Oakline Landscaping", "Household", "Tirumala Bhuram", 2_650, -12, "Open"), ("Sterling Security", "Household", "Tirumala Bhuram", 4_900, 6, "Open"),
-        ("Wake County", "Property tax", "Bhuram Real Estate LP", 96_700, 35, "Open"), ("Apex Elevator Co", "Repairs", "Bhuram Real Estate LP", 11_250, 15, "Open"),
-        ("Gusto", "Payroll", "Bhuram Holdings LLC", 86_000, 3, "Approved"), ("Iron Mountain", "Records", "Bhuram Holdings LLC", 840, 18, "Open")]:
+        ("Chubb Personal Risk", "Insurance", "Alladin Holdings LLC", 48_200, 4, "Open"), ("Mecklenburg County", "Property tax", "Alladin Real Estate LP", 128_400, 12, "Approved"),
+        ("Hale & Whitlock LLP", "Legal", "Alladin Family Trust", 22_850, -6, "Open"), ("Cardinal Property Mgmt", "Property management", "Alladin Real Estate LP", 18_300, 2, "Open"),
+        ("Duke Energy", "Utilities", "Alladin Holdings LLC", 3_120, -2, "Open"), ("Altitude Jet Services", "Aviation", "Alladin Aviation LLC", 36_900, 9, "Open"),
+        ("Ridgeway CPA Group", "Tax prep", "Alladin Holdings LLC", 41_000, 21, "Open"), ("Northbridge IT", "Technology", "Alladin Holdings LLC", 6_480, 1, "Approved"),
+        ("Oakline Landscaping", "Household", "Tirumala", 2_650, -12, "Open"), ("Sterling Security", "Household", "Tirumala", 4_900, 6, "Open"),
+        ("Wake County", "Property tax", "Alladin Real Estate LP", 96_700, 35, "Open"), ("Apex Elevator Co", "Repairs", "Alladin Real Estate LP", 11_250, 15, "Open"),
+        ("Gusto", "Payroll", "Alladin Holdings LLC", 86_000, 3, "Approved"), ("Iron Mountain", "Records", "Alladin Holdings LLC", 840, 18, "Open")]:
         db.session.add(Bill(payee=payee, category=cat, entity=ents[ent], amount=amt, due=today + timedelta(days=dd), status=st))
     for k in range(26):
         db.session.add(Bill(payee=rnd.choice(["Gusto", "Chubb Personal Risk", "Duke Energy", "Hale & Whitlock LLP", "Cardinal Property Mgmt", "Northbridge IT"]),
                             category="Recurring", entity=rnd.choice(list(ents.values())), amount=round(rnd.uniform(800, 90_000), 2),
                             due=today - timedelta(days=rnd.randint(20, 300)), status="Paid", paid_on=today - timedelta(days=rnd.randint(15, 290))))
     for name, ent, dirn, amt, freq, nd, cat in [
-        ("Office payroll", "Bhuram Holdings LLC", "out", 86_000, "Semi-monthly", 3, "Payroll"), ("Office lease — Raleigh", "Bhuram Holdings LLC", "out", 24_500, "Monthly", 11, "Rent"),
-        ("Cedar Bluff NOI sweep", "Bhuram Real Estate LP", "in", 192_000, "Monthly", 8, "Rent / NOI sweep"), ("Ironwood NOI sweep", "Bhuram Real Estate LP", "in", 214_000, "Monthly", 9, "Rent / NOI sweep"),
-        ("Schwab line interest", "Bhuram Family Trust", "out", 18_000, "Monthly", 14, "Interest"), ("Blue Heron quarterly distribution", "Bhuram Credit Partners LP", "in", 150_000, "Quarterly", 40, "Distribution"),
-        ("Foundation DAF funding", "Bhuram Foundation", "out", 125_000, "Quarterly", 25, "Charitable"), ("Aircraft management fee", "Bhuram Aviation LLC", "out", 31_000, "Monthly", 6, "Aviation"),
-        ("Umbrella insurance premium", "Bhuram Holdings LLC", "out", 96_000, "Annual", 70, "Insurance"), ("Family member note payment", "Bhuram Family Trust", "in", 6_150, "Monthly", 1, "Note payment received"),
-        ("Household staff", "Tirumala Bhuram", "out", 28_000, "Monthly", 5, "Household"), ("Tuition — upper school", "Tirumala Bhuram", "out", 21_400, "Semi-annual", 52, "Education")]:
+        ("Office payroll", "Alladin Holdings LLC", "out", 86_000, "Semi-monthly", 3, "Payroll"), ("Office lease — Raleigh", "Alladin Holdings LLC", "out", 24_500, "Monthly", 11, "Rent"),
+        ("Cedar Bluff NOI sweep", "Alladin Real Estate LP", "in", 192_000, "Monthly", 8, "Rent / NOI sweep"), ("Ironwood NOI sweep", "Alladin Real Estate LP", "in", 214_000, "Monthly", 9, "Rent / NOI sweep"),
+        ("Schwab line interest", "Alladin Family Trust", "out", 18_000, "Monthly", 14, "Interest"), ("Blue Heron quarterly distribution", "Alladin Credit Partners LP", "in", 150_000, "Quarterly", 40, "Distribution"),
+        ("Foundation DAF funding", "Alladin Foundation", "out", 125_000, "Quarterly", 25, "Charitable"), ("Aircraft management fee", "Alladin Aviation LLC", "out", 31_000, "Monthly", 6, "Aviation"),
+        ("Umbrella insurance premium", "Alladin Holdings LLC", "out", 96_000, "Annual", 70, "Insurance"), ("Family member note payment", "Alladin Family Trust", "in", 6_150, "Monthly", 1, "Note payment received"),
+        ("Household staff", "Tirumala", "out", 28_000, "Monthly", 5, "Household"), ("Tuition — upper school", "Tirumala", "out", 21_400, "Semi-annual", 52, "Education")]:
         db.session.add(RecurringCash(name=name, entity=ents[ent], direction=dirn, amount=amt, frequency=freq, next_date=today + timedelta(days=nd), category=cat))
-    for person, desc, amt, freq, nd, src in [("Kaveri Bhuram", "Monthly allowance", 6_000, "Monthly", 4, "Personal checking"), ("Arjun Bhuram", "University tuition & housing", 38_500, "Semi-annual", 48, "Kaveri Bhuram 2019 Trust"),
-                                             ("Lakshmi Bhuram", "Medical & care support", 9_200, "Monthly", 10, "Bhuram Family Trust"), ("Ravi Bhuram", "Home loan servicing (receivable)", 6_150, "Monthly", 1, "Family Trust operating"),
-                                             ("Extended family", "Annual gifts (exclusion)", 216_000, "Annual", 40, "Personal checking"), ("Kaveri Bhuram", "Car lease", 1_450, "Monthly", 17, "Personal checking")]:
+    for person, desc, amt, freq, nd, src in [("Kaveri Alladin", "Monthly allowance", 6_000, "Monthly", 4, "Personal checking"), ("Arjun Alladin", "University tuition & housing", 38_500, "Semi-annual", 48, "Kaveri Alladin 2019 Trust"),
+                                             ("Lakshmi Alladin", "Medical & care support", 9_200, "Monthly", 10, "Alladin Family Trust"), ("Ravi Alladin", "Home loan servicing (receivable)", 6_150, "Monthly", 1, "Family Trust operating"),
+                                             ("Extended family", "Annual gifts (exclusion)", 216_000, "Annual", 40, "Personal checking"), ("Kaveri Alladin", "Car lease", 1_450, "Monthly", 17, "Personal checking")]:
         db.session.add(FamilyObligation(person=person, description=desc, amount=amt, frequency=freq, next_date=today + timedelta(days=nd), paid_from=src))
     for k, (ben, amt, purpose, st) in enumerate([("Summit Arch Capital III", 420_000, "Capital call #4", "Pending approval"), ("Basalt Energy Transition II", 315_000, "Capital call #6", "Approved"),
                                                  ("First American Exchange", 1_200_000, "1031 replacement deposit", "Sent"), ("Ridgeway CPA Group", 41_000, "Tax prep retainer", "Draft"),
@@ -329,12 +329,12 @@ def seed(ctx):
         y = round(rnd.uniform(3.8, 4.5), 2)
         db.session.add(TreasuryHolding(description=f"US T-Bill {mat:%m/%d/%y}", cusip=f"912797{rnd.randint(100, 999)}{rnd.choice('ABCDEFGH')}{rnd.randint(1, 9)}",
                                        bank_account=banks[3], face=face, cost=round(face * (1 - y / 100 * (30 + k * 45) / 365), 2), yld=y, maturity=mat))
-    for vendor, desc, total, alloc in [("Northbridge IT", "Managed IT & security", 6_480, "Bhuram Holdings LLC:50; Bhuram Real Estate LP:30; Bhuram Ventures LLC:20"),
-                                       ("Raleigh office lease", "Office rent", 24_500, "Bhuram Holdings LLC:60; Bhuram Real Estate LP:25; Bhuram Foundation:15"),
-                                       ("Ridgeway CPA Group", "Audit & tax", 41_000, "Bhuram Family Trust:40; Bhuram Holdings LLC:30; Bhuram Real Estate LP:30"),
-                                       ("Chubb Personal Risk", "Umbrella policy", 96_000, "Tirumala Bhuram:50; Bhuram Holdings LLC:50"),
-                                       ("Gusto", "Office payroll", 86_000, "Bhuram Holdings LLC:70; Bhuram Real Estate LP:20; Bhuram Foundation:10"),
-                                       ("Hale & Whitlock LLP", "Estate planning", 22_850, "Bhuram Family Trust:70; Kaveri Bhuram 2019 Trust:30")]:
+    for vendor, desc, total, alloc in [("Northbridge IT", "Managed IT & security", 6_480, "Alladin Holdings LLC:50; Alladin Real Estate LP:30; Alladin Ventures LLC:20"),
+                                       ("Raleigh office lease", "Office rent", 24_500, "Alladin Holdings LLC:60; Alladin Real Estate LP:25; Alladin Foundation:15"),
+                                       ("Ridgeway CPA Group", "Audit & tax", 41_000, "Alladin Family Trust:40; Alladin Holdings LLC:30; Alladin Real Estate LP:30"),
+                                       ("Chubb Personal Risk", "Umbrella policy", 96_000, "Tirumala:50; Alladin Holdings LLC:50"),
+                                       ("Gusto", "Office payroll", 86_000, "Alladin Holdings LLC:70; Alladin Real Estate LP:20; Alladin Foundation:10"),
+                                       ("Hale & Whitlock LLP", "Estate planning", 22_850, "Alladin Family Trust:70; Kaveri Alladin 2019 Trust:30")]:
         for m in range(2):
             db.session.add(SharedExpense(day=today - timedelta(days=30 * m + rnd.randint(1, 10)), vendor=vendor, description=desc, total=total, allocation=alloc, settled=m > 0))
     period_prev = (today.replace(day=1) - timedelta(days=1)).strftime("%Y-%m")
@@ -355,10 +355,10 @@ def seed(ctx):
                                      statement_balance=stmt, status="Complete" if (per == period_prev2 or book == stmt) else "In progress"))
 
     # ---------- operations / legal / reports / tax
-    for carrier, kind, insured, cov, prem, rd in [("Chubb", "Umbrella liability", "Bhuram family", 50_000_000, 96_000, 70), ("PURE", "Homeowners — primary residence", "Tirumala Bhuram", 8_500_000, 31_200, 140),
-                                                  ("AIG Private Client", "Fine art", "Bhuram Holdings LLC", 4_500_000, 12_400, 220), ("Travelers", "Property — Cedar Bluff", "Cedar Bluff SPV", 42_000_000, 118_000, 45),
-                                                  ("Hiscox", "D&O / fiduciary", "Bhuram Holdings LLC", 10_000_000, 24_800, 190), ("Global Aerospace", "Aviation hull & liability", "Bhuram Aviation LLC", 25_000_000, 41_000, 12),
-                                                  ("Coalition", "Cyber", "Bhuram Holdings LLC", 5_000_000, 9_600, 300), ("Zurich", "Property — Ironwood", "Ironwood SPV", 45_000_000, 96_500, 95)]:
+    for carrier, kind, insured, cov, prem, rd in [("Chubb", "Umbrella liability", "Alladin family", 50_000_000, 96_000, 70), ("PURE", "Homeowners — primary residence", "Tirumala", 8_500_000, 31_200, 140),
+                                                  ("AIG Private Client", "Fine art", "Alladin Holdings LLC", 4_500_000, 12_400, 220), ("Travelers", "Property — Cedar Bluff", "Cedar Bluff SPV", 42_000_000, 118_000, 45),
+                                                  ("Hiscox", "D&O / fiduciary", "Alladin Holdings LLC", 10_000_000, 24_800, 190), ("Global Aerospace", "Aviation hull & liability", "Alladin Aviation LLC", 25_000_000, 41_000, 12),
+                                                  ("Coalition", "Cyber", "Alladin Holdings LLC", 5_000_000, 9_600, 300), ("Zurich", "Property — Ironwood", "Ironwood SPV", 45_000_000, 96_500, 95)]:
         db.session.add(InsurancePolicy(carrier=carrier, kind=kind, insured=insured, coverage=cov, premium=prem, renews=today + timedelta(days=rd), broker="Marsh Private Client"))
     for name, cat, contact, spend, w9 in [("Ridgeway CPA Group", "Tax & audit", "Dana Ruiz", 164_000, True), ("Hale & Whitlock LLP", "Legal", "M. Whitlock", 212_000, True),
                                           ("Northbridge IT", "Technology", "Sam Ortega", 77_760, True), ("Cardinal Property Mgmt", "Property management", "J. Pruitt", 219_600, True),
@@ -366,30 +366,30 @@ def seed(ctx):
                                           ("Oakline Landscaping", "Household", "T. Greer", 31_800, False), ("Sterling Security", "Household", "Dispatch", 58_800, True),
                                           ("Iron Mountain", "Records", "Account team", 10_080, True), ("Gusto", "Payroll", "Support", 2_400, True)]:
         db.session.add(Vendor(name=name, category=cat, contact=contact, email=f"{contact.split()[0].lower()}@{name.split()[0].lower()}.example", annual_spend=spend, w9_on_file=w9))
-    for name, kind, loc, owner, val in [("Primary residence — Raleigh", "Residence", "Raleigh, NC", "Tirumala Bhuram", 7_900_000), ("Lake house — Lake Norman", "Residence", "Cornelius, NC", "Bhuram Family Trust", 3_400_000),
-                                        ("Contemporary art collection (14 works)", "Art", "Raleigh residence", "Bhuram Holdings LLC", 4_200_000), ("1967 Porsche 911S", "Vehicle", "Raleigh garage", "Tirumala Bhuram", 310_000),
-                                        ("Jewelry", "Jewelry", "Bank vault", "Tirumala Bhuram", 640_000), ("Wine cellar", "Collectibles", "Raleigh residence", "Tirumala Bhuram", 220_000)]:
+    for name, kind, loc, owner, val in [("Primary residence — Raleigh", "Residence", "Raleigh, NC", "Tirumala", 7_900_000), ("Lake house — Lake Norman", "Residence", "Cornelius, NC", "Alladin Family Trust", 3_400_000),
+                                        ("Contemporary art collection (14 works)", "Art", "Raleigh residence", "Alladin Holdings LLC", 4_200_000), ("1967 Porsche 911S", "Vehicle", "Raleigh garage", "Tirumala", 310_000),
+                                        ("Jewelry", "Jewelry", "Bank vault", "Tirumala", 640_000), ("Wine cellar", "Collectibles", "Raleigh residence", "Tirumala", 220_000)]:
         db.session.add(PersonalAsset(name=name, kind=kind, location=loc, owner=owner, value=val, appraised=today - timedelta(days=rnd.randint(60, 900))))
-    for title, cp, kind, ent, years, val, ar in [("Office lease — Raleigh", "Glenwood Office Partners", "Lease", "Bhuram Holdings LLC", 5, 294_000, False),
-                                                 ("Managed IT services agreement", "Northbridge IT", "Services", "Bhuram Holdings LLC", 2, 77_760, True),
-                                                 ("Property management — Cedar Bluff", "Cardinal Property Mgmt", "Services", "Bhuram Real Estate LP", 3, 132_000, True),
-                                                 ("Aircraft management agreement", "Altitude Jet Services", "Services", "Bhuram Aviation LLC", 3, 372_000, True),
-                                                 ("Engagement letter — tax & audit", "Ridgeway CPA Group", "Engagement", "Bhuram Holdings LLC", 1, 164_000, True),
-                                                 ("Side letter — Summit Arch III", "Summit Arch Capital", "Side letter", "Bhuram Growth Trust", 10, 0, False),
-                                                 ("Subscription agreement — Granite Peak", "Granite Peak Secondaries", "Subscription", "Bhuram Growth Trust", 10, 5_500_000, False),
-                                                 ("NDA — Project Harbor", "Lantern Peak Partners", "NDA", "Bhuram Holdings LLC", 2, 0, False)]:
+    for title, cp, kind, ent, years, val, ar in [("Office lease — Raleigh", "Glenwood Office Partners", "Lease", "Alladin Holdings LLC", 5, 294_000, False),
+                                                 ("Managed IT services agreement", "Northbridge IT", "Services", "Alladin Holdings LLC", 2, 77_760, True),
+                                                 ("Property management — Cedar Bluff", "Cardinal Property Mgmt", "Services", "Alladin Real Estate LP", 3, 132_000, True),
+                                                 ("Aircraft management agreement", "Altitude Jet Services", "Services", "Alladin Aviation LLC", 3, 372_000, True),
+                                                 ("Engagement letter — tax & audit", "Ridgeway CPA Group", "Engagement", "Alladin Holdings LLC", 1, 164_000, True),
+                                                 ("Side letter — Summit Arch III", "Summit Arch Capital", "Side letter", "Alladin Growth Trust", 10, 0, False),
+                                                 ("Subscription agreement — Granite Peak", "Granite Peak Secondaries", "Subscription", "Alladin Growth Trust", 10, 5_500_000, False),
+                                                 ("NDA — Project Harbor", "Lantern Peak Partners", "NDA", "Alladin Holdings LLC", 2, 0, False)]:
         start = today - timedelta(days=rnd.randint(30, 900))
         db.session.add(Contract(title=title, counterparty=cp, kind=kind, entity=ents[ent], start=start, end=start + timedelta(days=365 * years), value=val, auto_renew=ar))
-    for title, kind, ent, counsel in [("Bhuram Family Trust agreement (restated)", "Trust agreement", "Bhuram Family Trust", "Hale & Whitlock LLP"),
-                                      ("Holdings LLC operating agreement", "Operating agreement", "Bhuram Holdings LLC", "Hale & Whitlock LLP"),
-                                      ("Real Estate LP partnership agreement", "LP agreement", "Bhuram Real Estate LP", "Hale & Whitlock LLP"),
-                                      ("Kaveri Bhuram 2019 Trust", "Trust agreement", "Kaveri Bhuram 2019 Trust", "Hale & Whitlock LLP"),
-                                      ("Foundation bylaws", "Bylaws", "Bhuram Foundation", "Brennan Nonprofit Law"),
-                                      ("Last will and testament — T. Bhuram", "Will", "Tirumala Bhuram", "Hale & Whitlock LLP"),
-                                      ("Durable power of attorney", "POA", "Tirumala Bhuram", "Hale & Whitlock LLP"),
-                                      ("Healthcare directive", "Directive", "Tirumala Bhuram", "Hale & Whitlock LLP"),
-                                      ("Ventures LLC operating agreement", "Operating agreement", "Bhuram Ventures LLC", "Hale & Whitlock LLP"),
-                                      ("Aviation LLC operating agreement", "Operating agreement", "Bhuram Aviation LLC", "Hale & Whitlock LLP")]:
+    for title, kind, ent, counsel in [("Alladin Family Trust agreement (restated)", "Trust agreement", "Alladin Family Trust", "Hale & Whitlock LLP"),
+                                      ("Holdings LLC operating agreement", "Operating agreement", "Alladin Holdings LLC", "Hale & Whitlock LLP"),
+                                      ("Real Estate LP partnership agreement", "LP agreement", "Alladin Real Estate LP", "Hale & Whitlock LLP"),
+                                      ("Kaveri Alladin 2019 Trust", "Trust agreement", "Kaveri Alladin 2019 Trust", "Hale & Whitlock LLP"),
+                                      ("Foundation bylaws", "Bylaws", "Alladin Foundation", "Brennan Nonprofit Law"),
+                                      ("Last will and testament — Tirumala", "Will", "Tirumala", "Hale & Whitlock LLP"),
+                                      ("Durable power of attorney", "POA", "Tirumala", "Hale & Whitlock LLP"),
+                                      ("Healthcare directive", "Directive", "Tirumala", "Hale & Whitlock LLP"),
+                                      ("Ventures LLC operating agreement", "Operating agreement", "Alladin Ventures LLC", "Hale & Whitlock LLP"),
+                                      ("Aviation LLC operating agreement", "Operating agreement", "Alladin Aviation LLC", "Hale & Whitlock LLP")]:
         ex = today - timedelta(days=rnd.randint(200, 3000))
         db.session.add(LegalDocument(title=title, kind=kind, entity=ents[ent], executed=ex, counsel=counsel, location="Vault + /Legal/Entity Docs",
                                      next_review=today + timedelta(days=rnd.randint(-30, 500))))
@@ -403,11 +403,11 @@ def seed(ctx):
     for rep, per, summ in [("Family net worth statement", "Q3", "Net worth up 3.1% QoQ; private marks drove most of the gain."), ("Quarterly investment memo", "Q3", "Public book outperformed S&P by 1.2 pts; two PE marks down."),
                            ("Cash & liquidity report", "Oct", "18 months of runway at current burn; $2.1M of calls due within 60 days."), ("Real estate quarterly", "Q3", "Portfolio DSCR 1.62x; one asset below covenant watch."),
                            ("Capital account statements", "Q3", "Statements issued to 6 co-investors."), ("Family net worth statement", "Q2", "Net worth flat; public equities offset private markdowns.")]:
-        db.session.add(ReportRun(report=rep, period=f"{per} {today.year}", generated_by=users["priya"], recipients="tirumala@bhuram-fo.example", summary=summ, status="Sent"))
+        db.session.add(ReportRun(report=rep, period=f"{per} {today.year}", generated_by=users["priya"], recipients="tirumala@alladin-fo.example", summary=summ, status="Sent"))
     yr = today.year - 1
-    for ent, form in [("Bhuram Family Trust", "1041"), ("Bhuram Growth Trust", "1041"), ("Kaveri Bhuram 2019 Trust", "1041"), ("Bhuram Holdings LLC", "1065"),
-                      ("Bhuram Real Estate LP", "1065"), ("Bhuram Ventures LLC", "1065"), ("Bhuram Credit Partners LP", "1065"), ("Bhuram Aviation LLC", "1065"),
-                      ("Bhuram Foundation", "990-PF"), ("Tirumala Bhuram", "1040")]:
+    for ent, form in [("Alladin Family Trust", "1041"), ("Alladin Growth Trust", "1041"), ("Kaveri Alladin 2019 Trust", "1041"), ("Alladin Holdings LLC", "1065"),
+                      ("Alladin Real Estate LP", "1065"), ("Alladin Ventures LLC", "1065"), ("Alladin Credit Partners LP", "1065"), ("Alladin Aviation LLC", "1065"),
+                      ("Alladin Foundation", "990-PF"), ("Tirumala", "1040")]:
         due = date(yr + 1, 4 if form in ("1040", "1041") else 3, 15)
         ext = date(yr + 1, 10 if form in ("1040",) else 9, 15) if rnd.random() < .7 else None
         db.session.add(TaxFiling(entity=ents[ent], form=form, year=yr, due=due, extended_to=ext, preparer="Ridgeway CPA Group",
@@ -417,16 +417,16 @@ def seed(ctx):
         exp = date(yr + 1, rnd.choice([3, 4, 5, 6, 8, 9]), 15)
         rec = exp - timedelta(days=rnd.randint(-40, 30)) if rnd.random() < .7 else None
         db.session.add(K1(investment=i, year=yr, expected=exp, received=rec if rec and rec <= today else None, estimate=rnd.random() < .15))
-    for ent in ("Tirumala Bhuram", "Bhuram Family Trust"):
+    for ent in ("Tirumala", "Alladin Family Trust"):
         for q, (m, d) in enumerate([(4, 15), (6, 15), (9, 15), (1, 15)]):
             y = today.year if q < 3 else today.year + 1
             due = date(y, m, d)
             for jur in ("Federal", "NC"):
                 db.session.add(EstimatedTax(entity=ents[ent], jurisdiction=jur, quarter=f"Q{q + 1}", due=due, amount=rnd.choice([180_000, 240_000, 310_000]) if jur == "Federal" else rnd.choice([22_000, 31_000]),
                                             paid_on=due - timedelta(days=3) if due < today else None))
-    for ent, item, auth, dd in [("Bhuram Holdings LLC", "Delaware annual franchise tax", "Delaware", 120), ("Bhuram Real Estate LP", "Delaware annual tax", "Delaware", 120),
-                                ("Bhuram Ventures LLC", "Delaware annual franchise tax", "Delaware", 120), ("Bhuram Holdings LLC", "NC foreign LLC annual report", "North Carolina", 150),
-                                ("Bhuram Foundation", "NC charitable solicitation renewal", "North Carolina", 40), ("Bhuram Holdings LLC", "Beneficial ownership (BOI) update", "FinCEN", -10),
-                                ("Bhuram Real Estate LP", "Texas franchise tax report", "Texas", 180), ("Bhuram Aviation LLC", "FAA registration renewal", "FAA", 300),
-                                ("Bhuram Credit Partners LP", "Form D amendment", "SEC", 60), ("Bhuram Family Trust", "Trustee certification", "Trustee", 25)]:
+    for ent, item, auth, dd in [("Alladin Holdings LLC", "Delaware annual franchise tax", "Delaware", 120), ("Alladin Real Estate LP", "Delaware annual tax", "Delaware", 120),
+                                ("Alladin Ventures LLC", "Delaware annual franchise tax", "Delaware", 120), ("Alladin Holdings LLC", "NC foreign LLC annual report", "North Carolina", 150),
+                                ("Alladin Foundation", "NC charitable solicitation renewal", "North Carolina", 40), ("Alladin Holdings LLC", "Beneficial ownership (BOI) update", "FinCEN", -10),
+                                ("Alladin Real Estate LP", "Texas franchise tax report", "Texas", 180), ("Alladin Aviation LLC", "FAA registration renewal", "FAA", 300),
+                                ("Alladin Credit Partners LP", "Form D amendment", "SEC", 60), ("Alladin Family Trust", "Trustee certification", "Trustee", 25)]:
         db.session.add(ComplianceItem(entity=ents[ent], item=item, authority=auth, due=today + timedelta(days=dd), status="Overdue" if dd < 0 else "Pending"))

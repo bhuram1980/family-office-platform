@@ -121,7 +121,7 @@ def dashboard():
                                       for t in tu]), right=("+ Add tuition", u("tuition_new")))]
     years = sorted({g.paid_on.year for g in Grant.query.filter(Grant.paid_on.isnot(None)).all()} | {today.year})
     return render("Philanthropy", [tabs([("overview", "Overview", overview), ("summary", "Summary", summary), ("grid", "Month grid", mg), ("tuition", "Tuition", tuition)])],
-                  sub="Bhuram Foundation and donor-advised fund",
+                  sub="Alladin Foundation and donor-advised fund",
                   actions=[(str(x), u("dashboard", year=x), "primary" if x == y else "") for x in years] + [("+ New grant", u("grants_new"), "primary")])
 
 
@@ -197,7 +197,7 @@ def pay(gid):
         g.reconciled = True
     else:
         g.method = "Wire"
-        ent = Entity.query.filter_by(name="Bhuram Foundation").first()
+        ent = Entity.query.filter_by(name="Alladin Foundation").first()
         acct = BankAccount.query.filter_by(entity_id=ent.id).first() if ent else None
         acct = acct or BankAccount.query.filter_by(kind="Operating").first()
         acct.balance = (acct.balance or 0) - g.amount
@@ -285,14 +285,14 @@ def match(tid):
 
 @bp.route("/documents/")
 def documents():
-    ent = Entity.query.filter_by(name="Bhuram Foundation").first()
+    ent = Entity.query.filter_by(name="Alladin Foundation").first()
     docs = Document.query.filter(Document.deleted_at.is_(None), Document.entity_id == (ent.id if ent else -1)).all()
     env = SignatureRequest.query.filter(SignatureRequest.title.ilike("%grant%")).all()
     return render("Documents", [
         card("Grant agreements (e-signature)", table(["Envelope", "Status", "Sent"], [[link(r.title, url_for("documents.esign_detail", rid=r.id)), status(r.status), D(r.sent_at)] for r in env],
                                                     empty="No grant agreements yet."), right=("New envelope →", url_for("documents.esign_new"))),
         card("Foundation documents", table(["Document", "Type", "Received"], [[link(d.filename, url_for("documents.doc", did=d.id)), d.kind or d.proposed_kind, D(d.received_at)] for d in docs],
-                                           empty="No documents filed to the Foundation yet — upload in Documents and assign the entity “Bhuram Foundation”."),
+                                           empty="No documents filed to the Foundation yet — upload in Documents and assign the entity “Alladin Foundation”."),
              right=("Upload →", url_for("documents.inbox"))),
     ])
 

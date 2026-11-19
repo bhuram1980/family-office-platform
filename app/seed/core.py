@@ -4,11 +4,11 @@ from ..extensions import db
 from ..models import (User, LoginEvent, AuditLog, Announcement, Notification, ApiCredential,
                        ApiUsage, Setting, EmailLog, Passkey, APP_IDS)
 
-PASSWORD = "bhuram-demo"
+PASSWORD = "alladin-demo"
 
 USERS = [
     # username, name, role, title, color, apps
-    ("tirumala", "Tirumala Bhuram", "super_admin", "Principal", "#4f46e5", None),
+    ("tirumala", "Tirumala", "super_admin", "Principal", "#4f46e5", None),
     ("priya", "Priya Raman", "admin", "Chief Financial Officer", "#0ea5e9", None),
     ("marcus", "Marcus Oyelaran", "analyst", "Portfolio Manager", "#f59e0b", "stocks,pevc,deals,tasks,documents"),
     ("elena", "Elena Vasquez", "analyst", "Controller", "#10b981", "family-office,real-estate,documents,tasks,philanthropy,pevc"),
@@ -24,7 +24,7 @@ def seed(ctx):
     rnd = ctx["rnd"]
     users = {}
     for un, name, role, title, color, apps in USERS:
-        u = User(username=un, name=name, email=f"{un}@bhuram-fo.example", role=role, title=title, color=color,
+        u = User(username=un, name=name, email=f"{un}@alladin-fo.example", role=role, title=title, color=color,
                  app_access=apps or ",".join(APP_IDS))
         u.set_password(PASSWORD)
         db.session.add(u)
@@ -78,7 +78,7 @@ def seed(ctx):
         for prov, app, base in [("LLM provider", "documents", 1.6), ("LLM provider", "deals", .7), ("Market data", "stocks", .25), ("Bank API", "family-office", .1)]:
             calls = int(rnd.uniform(.4, 1.6) * base * 220)
             db.session.add(ApiUsage(day=day, provider=prov, app=app, calls=calls, cost=round(calls * base * rnd.uniform(.004, .006), 2)))
-    for k, v, l in [("org_name", "Bhuram Family Office", "Organisation name"), ("session_hours", "12", "Session length (hours)"),
+    for k, v, l in [("org_name", "Alladin Family Office", "Organisation name"), ("session_hours", "12", "Session length (hours)"),
                     ("lockout_attempts", "5", "Failed sign-ins before lockout"), ("fiscal_year_start", "01-01", "Fiscal year start (MM-DD)"),
                     ("base_currency", "USD", "Base currency"), ("require_passkey_admins", "false", "Require passkeys for admins"),
                     ("backup_time", "02:30", "Nightly backup (UTC)")]:

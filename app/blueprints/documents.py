@@ -20,7 +20,7 @@ from .common import make_bp, write_required
 
 bp = make_bp("documents", "documents")
 SETTINGS = [("auto_file_threshold", "Auto-file when confidence is at least", "0.9", "number"), ("retention_days", "Keep deleted documents for (days)", "30", "number"),
-            ("intake_address", "Intake email address", "docs@bhuram-fo.example"), ("dropbox_root", "Watched Dropbox folder", "/Bhuram FO/Inbox")]
+            ("intake_address", "Intake email address", "docs@alladin-fo.example"), ("dropbox_root", "Watched Dropbox folder", "/Alladin FO/Inbox")]
 APP_LABEL = {"pevc": "PE / VC", "family-office": "Family Office", "real-estate": "Real Estate", "stocks": "Stocks", "deals": "Deals", "documents": "Documents"}
 
 
@@ -315,7 +315,7 @@ def dropbox():
     by = defaultdict(list)
     for d in docs:
         by[d.folder or "/"].append(d)
-    blocks = [note(f"Watching {st.get('documents', 'dropbox_root', '/Bhuram FO/Inbox')} and its sub-folders. New files land in the Inbox with a proposal.")]
+    blocks = [note(f"Watching {st.get('documents', 'dropbox_root', '/Alladin FO/Inbox')} and its sub-folders. New files land in the Inbox with a proposal.")]
     for f, ds in sorted(by.items()):
         blocks.append(card(f"{f} · {len(ds)}", _doc_table(ds)))
     return render("Dropbox", blocks, actions=[("post", "Sync now", u("sync"), "primary", None)])
@@ -346,7 +346,7 @@ def emails():
     es = InboundEmail.query.order_by(InboundEmail.received_at.desc()).all()
     rows = [[e.received_at.strftime("%b %d %H:%M"), e.from_addr, link(e.subject, u("email", eid=e.id)), len(e.attachments),
              status("Done") if e.processed else status("Pending")] for e in es]
-    return render("Emails", [note(f"Forward documents to {st.get('documents', 'intake_address', 'docs@bhuram-fo.example')}; attachments are split out into the Inbox."),
+    return render("Emails", [note(f"Forward documents to {st.get('documents', 'intake_address', 'docs@alladin-fo.example')}; attachments are split out into the Inbox."),
                              card(None, table(["Received", "From", "Subject", ">Attachments", "Status"], rows))])
 
 
