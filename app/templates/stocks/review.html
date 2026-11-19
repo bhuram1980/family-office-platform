@@ -1,0 +1,28 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Review Board" %}
+{% block content %}
+<div class="ph"><div><h1>Review Board</h1><div class="sub">Drag a card, or use the buttons, to move a stock through review. Finishing a review schedules the next one in 90 days.</div></div></div>
+<div class="kb" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+{% for col, items in [('None', backlog)] + cols.items()|list %}
+<div class="kcol" data-drop="{{ col }}"><h4><span>{{ 'Backlog' if col == 'None' else col }}</span><span class="muted">{{ items|length }}</span></h4>
+<div style="max-height:70vh;overflow:auto">
+{% for s in items %}<div class="kcard" draggable="{{ 'true' if current_user.can_write else 'false' }}" data-id="{{ s.id }}" style="flex-direction:column;align-items:stretch">
+<div class="split"><a class="tk" href="{{ url_for('stocks.charts', t=s.ticker) }}">{{ s.ticker }}</a><span class="tiny muted">conv {{ s.conviction }} · {{ s.next_review|dfmt('%b %d') }}</span></div>
+<div class="small muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }} · {{ s.theme }}</div>
+<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">{% for nxt in ['None','Queued','In Review','Done'] if nxt != col %}
+<button class="btn sm" hx-post="{{ url_for('stocks.review_move', sid=s.id) }}" hx-vals='{"status": "{{ nxt }}"}' {% if not current_user.can_write %}disabled{% endif %}>→ {{ 'Backlog' if nxt == 'None' else nxt }}</button>{% endfor %}</div></div>
+{% endfor %}</div></div>{% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var dragId=null;
+  document.querySelectorAll('.kcard[draggable=true]').forEach(function(c){c.addEventListener('dragstart',function(){dragId=c.dataset.id;});});
+  document.querySelectorAll('[data-drop]').forEach(function(col){
+    col.addEventListener('dragover',function(e){e.preventDefault();col.classList.add('dragover');});
+    col.addEventListener('dragleave',function(){col.classList.remove('dragover');});
+    col.addEventListener('drop',function(e){e.preventDefault();col.classList.remove('dragover');if(!dragId)return;
+      htmx.ajax('POST','{{ url_for("stocks.review_move", sid=0) }}'.replace('/0/','/'+dragId+'/'),{values:{status:col.dataset.drop},headers:{'X-CSRFToken':'{{ csrf_token() }}'}});});
+  });
+});</script>{% endblock %}

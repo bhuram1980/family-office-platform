@@ -1,0 +1,28 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Activity" %}
+{% block content %}
+<div class="ph"><div><h1>Activity</h1><div class="sub">Trades, dividends, interest and cash movements · {{ pag.total }} entries</div></div>
+<div class="acts"><a class="btn" href="{{ url_for('stocks.pnl') }}">P&amp;L</a><a class="btn" href="{{ url_for('stocks.fees') }}">Fees</a><button class="btn primary" data-modal="ticket"><i class="ic" data-lucide="plus"></i>New entry</button></div></div>
+{{ acct_chips(all_accts, codes, url_for('stocks.trade_log')) }}
+<div class="tabs">{% for k,l in [('all','All'),('trades','Trades'),('dividends','Dividends'),('interest','Interest'),('cash','Cash')] %}<a class="{{ 'on' if tab == k }}" href="?{{ qs(tab=k, page=None) }}">{{ l }}</a>{% endfor %}
+<form style="margin-left:auto" class="search"><input type="hidden" name="tab" value="{{ tab }}"><input name="q" value="{{ request.args.get('q','') }}" placeholder="Ticker or note…" style="border:0;outline:0;font:inherit"></form></div>
+<div class="card"><div class="tbl-wrap"><table class="t sortable compact"><thead><tr><th>Date</th><th>Type</th><th>Ticker</th><th>Account</th><th class="r">Shares</th><th class="r">Price</th><th class="r">Amount</th><th class="r">Fees</th><th class="r">Realized</th><th>Note</th><th></th></tr></thead><tbody>
+{% for x in pag.items %}<tr><td>{{ x.day|dfmt }}</td><td><span class="pill {{ {'BUY':'blue','SELL':'amber','DIV':'green','INT':'purple','FEE':'red'}.get(x.kind,'gray') }}">{{ x.kind }}</span></td>
+<td>{% if x.security %}<a class="tk" href="{{ url_for('stocks.charts', t=x.security.ticker) }}">{{ x.security.ticker }}</a>{% else %}—{% endif %}</td><td>{{ x.account.code }}</td><td class="r">{{ x.shares|num if x.shares else '' }}</td><td class="r">{{ x.price|money(2) if x.price else '' }}</td>
+<td class="r {{ x.amount|tone }}">{{ x.amount|money(2) }}</td><td class="r">{{ x.fees|money(2) if x.fees else '' }}</td><td class="r {{ x.realized_pnl|tone }}">{{ x.realized_pnl|money if x.realized_pnl is not none else '' }}</td><td class="small muted wrap">{{ x.note or '' }}</td>
+<td>{% if x.kind not in ('BUY','SELL') and current_user.can_write %}{{ post_button(url_for('stocks.delete_txn', txn_id=x.id), '×', 'btn sm', confirm='Delete this entry and reverse its cash?') }}{% endif %}</td></tr>
+{% else %}<tr><td colspan="11"><div class="empty">No entries.</div></td></tr>{% endfor %}</tbody></table></div>{{ pager(pag) }}</div>
+
+<div class="modal-bg" id="ticket"><div class="modal"><h3>New activity entry</h3>
+<form method="post" action="{{ url_for('stocks.new_txn') }}">{{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+<div class="form-row"><label>Type</label><select class="inp" name="kind">{% for k,l in [('BUY','Buy'),('SELL','Sell'),('DIV','Dividend'),('INT','Interest'),('DEP','Deposit'),('WD','Withdrawal'),('FEE','Fee')] %}<option value="{{k}}">{{l}}</option>{% endfor %}</select></div>
+<div class="form-row"><label>Account</label><select class="inp" name="account_id">{% for a in all_accts %}<option value="{{ a.id }}">{{ a.name }}</option>{% endfor %}</select></div>
+<div class="form-row"><label>Security</label><select class="inp" name="security_id"><option value="">— none (cash entry)</option>{% for s in securities %}<option value="{{ s.id }}">{{ s.ticker }} — {{ s.name }}</option>{% endfor %}</select></div>
+<div class="form-row"><label>Shares / price</label><div style="display:flex;gap:8px"><input class="inp" name="shares" type="number" step="any" placeholder="Shares"><input class="inp" name="price" type="number" step="any" placeholder="Price"><input class="inp" name="fees" type="number" step="any" placeholder="Fees"></div></div>
+<div class="form-row"><label>Amount (cash entries)</label><input class="inp" name="amount" type="number" step="any" placeholder="e.g. 2500"></div>
+<div class="form-row"><label>Date</label><input class="inp" type="date" name="day" value="{{ today }}"></div>
+<div class="form-row"><label>Note</label><input class="inp" name="note"></div>
+<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button type="button" class="btn" data-close>Cancel</button><button class="btn primary" {% if not current_user.can_write %}disabled{% endif %}>Record</button></div>
+</form></div></div>
+{% endblock %}

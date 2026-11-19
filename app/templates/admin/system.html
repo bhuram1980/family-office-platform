@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "System & health" %}
+{% block content %}
+<div class="ph"><div><h1>System &amp; health</h1><div class="sub">Database, schema version and table sizes</div></div><div class="acts"><a class="btn" href="{{ url_for('healthz') }}">/healthz</a></div></div>
+<div class="grid g3">{{ kpi('Database', 'Online', version.split(' on ')[0], 'pos', '#10b981') }}{{ kpi('Database size', size, counts|length ~ ' tables', '', '#6366f1') }}{{ kpi('Schema revision', rev or 'unstamped', 'alembic', '', '#f59e0b') }}</div>
+<div class="card"><div class="card-h"><h3>Tables</h3><span class="small muted">{{ counts|sum(attribute=1)|num }} rows</span></div><table class="t sortable compact"><thead><tr><th>Table</th><th class="r">Rows</th></tr></thead><tbody>{% for t, n in counts %}<tr><td class="mono">{{ t }}</td><td class="r">{{ n|num }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

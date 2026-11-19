@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "Sign-in activity" %}
+{% block content %}
+<div class="ph"><div><h1>Activity</h1><div class="sub">Every sign-in attempt, successful or not</div></div></div>
+<div class="chips"><a class="chip {{ 'on' if request.args.get('ok') != '0' }}" href="?">All</a><a class="chip {{ 'on' if request.args.get('ok') == '0' }}" href="?ok=0">Failed only</a></div>
+<div class="card"><table class="t compact"><thead><tr><th>When (UTC)</th><th>User</th><th>Result</th><th>IP</th><th>Agent</th></tr></thead><tbody>
+{% for e in pag.items %}<tr><td>{{ e.at.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ e.user.name if e.user else e.username }}</td><td>{{ status('sent' if e.success else 'failed')|replace('sent','success') }}</td><td class="mono small">{{ e.ip }}</td><td class="small muted">{{ (e.user_agent or '')|truncate(50) }}</td></tr>{% endfor %}</tbody></table>{{ pager(pag) }}</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars %}
+{% block topbar %}
+<div class="ticker">
+  {% for i in market_indices() %}<span>{{ i.name }}<b>{{ '{:,.2f}'.format(i.value) }}</b><span class="chg {{ 'up' if i.change_pct >= 0 else 'dn' }}">{{ '%+.2f'|format(i.change_pct) }}%</span></span>{% endfor %}
+  <form action="{{ url_for('stocks.charts') }}" class="tsearch" style="display:flex"><input name="t" placeholder="Search stock…" style="all:unset;color:#cbd5e1;width:100%"></form>
+</div>
+{% endblock %}
+{% block sidebar_extra %}
+<div style="padding:10px 14px;border-top:1px solid var(--line2)">
+  <div class="split small"><span class="mono" data-clock>--:--:--</span><span class="tiny muted">● {{ 'OPEN' if now.weekday() < 5 and 14 <= now.hour < 21 else 'CLOSED' }}</span></div>
+  <form method="post" action="{{ url_for('stocks.refresh') }}" style="margin-top:8px">{{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path }}">
+    <button class="btn primary" style="width:100%;justify-content:center" {% if not current_user.can_write %}disabled{% endif %}><i class="ic" data-lucide="refresh-cw"></i>Refresh Prices</button></form>
+</div>
+{% endblock %}

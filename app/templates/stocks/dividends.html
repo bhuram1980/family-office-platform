@@ -1,0 +1,17 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Dividends" %}
+{% block content %}
+<div class="ph"><div><h1>Dividends</h1><div class="sub">Received income and forward estimate from current yields</div></div><div class="acts"><a class="btn" href="{{ url_for('stocks.trade_log', tab='dividends') }}">Ledger</a></div></div>
+<div class="grid g4">
+{{ kpi('Trailing 12 months', ttm|money, 'received', 'pos', '#10b981') }}
+{{ kpi('Forward 12 months', fwd|money, 'shares × current yield', '', '#6366f1') }}
+{{ kpi('Portfolio yield', (fwd / long_mv * 100)|round(2) ~ '%', 'on long market value', '', '#0ea5e9') }}
+{{ kpi('Upcoming ex-dates', upcoming|length, 'from corporate actions', '', '#f59e0b') }}</div>
+<div class="grid g21"><div class="card"><div class="card-h"><h3>Received by month</h3></div><div class="card-b">{{ chartbox(chart, 250) }}</div></div>
+<div class="card"><div class="card-h"><h3>Upcoming</h3><a class="right" href="{{ url_for('stocks.corporate_actions_new') }}">+ Add</a></div><div class="list">{% for a in upcoming %}<div class="li"><div><div class="lt">{{ a.security.ticker }} · {{ a.detail }}</div><div class="ls">ex-date {{ a.ex_date|dfmt }}</div></div></div>{% else %}<div class="empty">None scheduled.</div>{% endfor %}</div></div></div>
+<div class="grid g2"><div class="card"><div class="card-h"><h3>Forward income by holding</h3></div><div style="max-height:440px;overflow:auto"><table class="t sortable compact"><thead><tr><th>Ticker</th><th class="r">Yield</th><th class="r">Mkt value</th><th class="r">Est. annual</th></tr></thead><tbody>
+{% for p, v in proj %}<tr><td><span class="tk">{{ p.security.ticker }}</span></td><td class="r">{{ p.security.div_yield|pct(2, False) }}</td><td class="r">{{ p.mv|money }}</td><td class="r pos">{{ v|money }}</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="card"><div class="card-h"><h3>Received</h3></div><div style="max-height:440px;overflow:auto"><table class="t compact"><thead><tr><th>Date</th><th>Ticker</th><th>Account</th><th class="r">Amount</th></tr></thead><tbody>
+{% for d in divs %}<tr><td>{{ d.day|dfmt }}</td><td>{{ d.security.ticker if d.security }}</td><td>{{ d.account.code }}</td><td class="r pos">{{ d.amount|money(2) }}</td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

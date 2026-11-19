@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "Platform settings" %}
+{% block content %}
+<div class="ph"><div><h1>Settings</h1><div class="sub">Platform-wide configuration stored in the shared database</div></div></div>
+<form method="post" class="card" style="max-width:820px"><div class="card-b">{{ csrf() }}
+{% for s in items %}<div class="form-row"><label>{{ s.label or s.key }}<div class="tiny muted mono">{{ s.key }}</div></label><input class="inp" name="s_{{ s.id }}" value="{{ s.value }}"></div>{% endfor %}
+<div style="text-align:right;margin-top:12px"><button class="btn primary">Save settings</button></div></div></form>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Short Options" %}
+{% block content %}
+<div class="ph"><div><h1>Short Options</h1><div class="sub">Covered calls and cash-secured puts · {{ open_|length }} open</div></div><div class="acts"><a class="btn primary" href="{{ url_for('stocks.option_new') }}"><i class="ic" data-lucide="plus"></i>New option</a></div></div>
+<div class="grid g4">
+{{ kpi('Premium collected', premium|money, 'open positions', 'pos', '#10b981') }}
+{{ kpi('Cost to close', liability|money, 'at current marks', '', '#f59e0b') }}
+{{ kpi('Unrealized on options', (premium - liability)|money, 'premium less cost to close', (premium-liability)|tone, '#6366f1') }}
+{{ kpi('Put notional', notional|money, 'cash needed if all assigned', '', '#ef4444') }}</div>
+<div class="card"><table class="t sortable"><thead><tr><th>Underlying</th><th>Right</th><th class="r">Strike</th><th>Expiry</th><th class="r">DTE</th><th class="r">Contracts</th><th class="r">Premium</th><th class="r">Mark</th><th class="r">P&amp;L</th><th class="r">Spot</th><th class="r">Moneyness</th><th>Account</th><th>Status</th><th></th></tr></thead><tbody>
+{% for o in opts %}{% set pl = -o.contracts * 100 * (o.premium - o.mark) %}{% set mny = (o.security.price / o.strike - 1) * 100 %}
+<tr><td><span class="tk">{{ o.security.ticker }}</span></td><td>{{ o.right }}</td><td class="r">{{ o.strike|money(2) }}</td><td>{{ o.expiry|dfmt }}</td><td class="r {{ 'neg' if (o.expiry - today).days < 10 }}">{{ (o.expiry - today).days }}</td><td class="r">{{ o.contracts }}</td>
+<td class="r">{{ o.premium|money(2) }}</td><td class="r">{{ o.mark|money(2) }}</td><td class="r {{ pl|tone }}">{{ pl|money }}</td><td class="r">{{ o.security.price|money(2) }}</td><td class="r {{ 'neg' if (o.right == 'PUT' and mny < 3) or (o.right == 'CALL' and mny > -3) }}">{{ mny|pct(1) }}</td>
+<td>{{ o.account.code }}</td><td>{{ status(o.status) }}</td><td style="white-space:nowrap">{% if o.status == 'open' %}{{ post_button(url_for('stocks.close_option', oid=o.id), 'Close', 'btn sm', confirm='Buy to close at the current mark?') }}{% endif %}<a class="btn sm" href="{{ url_for('stocks.option_edit', obj_id=o.id) }}">Edit</a></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

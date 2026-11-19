@@ -1,0 +1,65 @@
+{% extends "standalone.html" %}
+{% block title %}The operating system for a family office{% endblock %}
+{% block body %}
+<div class="nav-top">
+  <div style="display:flex;align-items:center;gap:10px"><div class="sb-logo" style="--appc:#4f46e5">BF</div><b>{{ BRAND }}</b></div>
+  <div class="links"><a href="#apps">Apps</a><a href="#what">Platform</a><a href="#shared">Shared</a>
+  {% if current_user.is_authenticated %}<a class="on" href="{{ url_for('public.launch') }}">Open platform</a>{% else %}<a class="on" href="{{ url_for('auth.login') }}">Sign in</a>{% endif %}</div>
+</div>
+<section class="hero">
+  <div class="eyebrow">Bhuram Family Office platform</div>
+  <h1 class="serif">One system for everything the family office runs on</h1>
+  <p class="lead">Ten connected apps for public equities, private investments, property, cash, deals, documents, giving and the team's work. They share one sign-in and one database, so each number is entered once and appears everywhere it's needed.</p>
+  <div class="cta"><a class="btn primary lg" href="{{ url_for('stocks.dashboard') }}">Open the platform →</a><a class="btn lg" href="#apps">Explore the ten apps</a></div>
+  <div class="tiny muted">Sign-in required. Every save, trade approval and filing is written to PostgreSQL and recorded in the audit log.</div>
+  <div class="previews">
+    <img class="p1" src="{{ url_for('static', filename='previews/stocks.png') }}" alt="Stocks dashboard">
+    <img class="p2" src="{{ url_for('static', filename='previews/family-office.png') }}" alt="Family Office dashboard">
+  </div>
+  <div class="callout"><b>Seeded with synthetic data.</b> Every company, entity, person and figure in this install is invented for demonstration. Replace it with your own through the apps, CSV import or the seed script.</div>
+</section>
+
+<section class="section" id="apps">
+  <div class="eyebrow">One login, ten apps</div>
+  <h2 class="serif">Pick an app</h2>
+  <p class="sublead">Each app is a working module on the shared database. Open one, or read what it does first.</p>
+  <div class="appgrid">
+  {% for a in apps %}
+    <div class="appcard">
+      <div class="shot"><img loading="lazy" src="{{ url_for('static', filename='previews/' ~ a.id ~ '.png') }}" alt="{{ a.name }} preview"></div>
+      <div class="bd">
+        <div class="nm"><span class="ico" style="background:{{ a.color }}">{{ a.short }}</span>{{ a.name }}</div>
+        <p>{{ a.desc }}</p>
+        <div class="row"><a class="btn primary" href="{{ url_for(a.id.replace('-','_') ~ '.dashboard') }}">Open app →</a>
+        <button class="btn" data-modal="m-{{ a.id }}">Details</button></div>
+      </div>
+    </div>
+    <div class="modal-bg" id="m-{{ a.id }}"><div class="modal">
+      <div class="nm" style="display:flex;gap:10px;align-items:center;margin-bottom:10px"><span class="sb-logo" style="--appc:{{ a.color }}">{{ a.short }}</span><h3 style="margin:0">{{ a.name }}</h3></div>
+      <p>{{ a.desc }}</p>
+      <ul style="color:#475569;line-height:1.7;padding-left:18px">{% for sec in a.nav %}<li><b>{{ sec.title or 'Main' }}:</b> {{ sec['items']|map(attribute='label')|join(', ') }}</li>{% endfor %}</ul>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button class="btn" data-close>Close</button><a class="btn primary" href="{{ url_for(a.id.replace('-','_') ~ '.dashboard') }}">Open {{ a.name }} →</a></div>
+    </div></div>
+  {% endfor %}
+  </div>
+</section>
+
+<section class="section" id="what">
+  <div class="eyebrow">The platform</div>
+  <h2 class="serif">What this is</h2>
+  <div class="prose-c">
+    <p>A family office runs on a small team and a large number of moving parts: brokerage accounts at several custodians, private funds that call capital on their own schedules, properties with lenders and covenants, entities that lend to each other, a stream of statements and notices by email, and a foundation that writes checks every month. Most offices hold this together with spreadsheets and memory.</p>
+    <p>This platform replaces the spreadsheets with ten focused apps on one PostgreSQL database. A property added in Real Estate shows up in the Family Office balance sheet; a distribution recorded once flows to performance, cash and the investor portal; a document filed from the inbox is linked to the deal it belongs to. Every write is permission-checked and audited.</p>
+    <p>It is a Flask application, server-rendered, with HTMX for in-place updates. It runs in one container next to Postgres and deploys anywhere that runs Docker.</p>
+  </div>
+</section>
+
+<section class="section" id="shared">
+  <div class="eyebrow">The foundation</div>
+  <h2 class="serif">What the ten share</h2>
+  <div class="share">
+  {% for t, icon, d in shared %}<div class="c"><div class="i"><i data-lucide="{{ icon }}" style="width:16px;height:16px"></i></div><h4>{{ t }}</h4><p>{{ d }}</p></div>{% endfor %}
+  </div>
+</section>
+<div class="foot"><span>© {{ today.year }} {{ BRAND }}</span><span>Synthetic data · built for Tirumala Bhuram</span></div>
+{% endblock %}

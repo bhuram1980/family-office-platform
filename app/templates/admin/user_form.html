@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = (u.name if u else 'New user') %}
+{% set active_nav = 'admin.users' %}
+{% block content %}
+<div style="max-width:820px"><div class="ph"><div><a class="small" href="{{ url_for('admin.users') }}">← Users</a><h1 style="margin-top:6px">{{ u.name if u else 'New user' }}</h1></div></div>
+<form method="post" class="card"><div class="card-b">{{ csrf() }}
+<div class="form-row"><label>Full name *</label><input class="inp" name="name" value="{{ u.name if u else (f.name if f else '') }}" required></div>
+{% if not u %}<div class="form-row"><label>Username *</label><input class="inp" name="username" value="{{ f.username if f else '' }}" required></div>{% endif %}
+<div class="form-row"><label>Email *</label><input class="inp" type="email" name="email" value="{{ u.email if u else (f.email if f else '') }}" required></div>
+<div class="form-row"><label>Title</label><input class="inp" name="title" value="{{ (u.title if u else '') or '' }}"></div>
+<div class="form-row"><label>Role</label><select class="inp" name="role">{% for r in roles %}{% if r != 'super_admin' or current_user.role == 'super_admin' %}<option value="{{ r }}" {{ 'selected' if (u and u.role == r) or (not u and r == 'analyst') }}>{{ r|replace('_',' ')|title }}</option>{% endif %}{% endfor %}</select>
+<div class="tiny muted" style="margin-top:4px">Super admin: everything. Admin: manage users, approve trades. Analyst: read/write in granted apps. Viewer: read-only. Investor: IR Portal only.</div></div>
+<div class="form-row"><label>App access</label><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">{% for a in apps.values() %}<label class="small" style="display:flex;gap:6px;align-items:center"><input type="checkbox" name="app_{{ a.id }}" {{ 'checked' if (u and a.id in (u.app_access or '').split(',')) or not u }}> {{ a.name }}</label>{% endfor %}</div></div>
+<div class="form-row"><label>Active</label><input type="checkbox" name="active" {{ 'checked' if not u or u.is_active_flag }}></div>
+<div class="form-row"><label>{{ 'Set new password' if u else 'Initial password' }}</label><input class="inp" type="password" name="password" placeholder="blank = generate a temporary one{{ '' if not u else ' (or leave unchanged)' }}"><div class="tiny muted" style="margin-top:4px">The user must change it at next sign-in.</div></div>
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><a class="btn" href="{{ url_for('admin.users') }}">Cancel</a><button class="btn primary">{{ 'Save user' if u else 'Create user' }}</button></div></div></form></div>
+{% endblock %}

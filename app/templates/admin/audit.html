@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "Audit log" %}
+{% block topbar %}{% include "admin/_top.html" %}{% endblock %}
+{% block content %}
+<div class="ph"><div><h1>Audit log</h1><div class="sub">{{ pag.total }} entries · every write in every app</div></div></div>
+<div class="chips"><span class="upper">App</span><a class="chip {{ 'on' if not request.args.get('app') }}" href="?{{ qs(app=None, page=None) }}">All</a>{% for a in apps %}<a class="chip {{ 'on' if request.args.get('app') == a }}" href="?{{ qs(app=a, page=None) }}">{{ a }}</a>{% endfor %}</div>
+<div class="chips"><span class="upper">Action</span><a class="chip {{ 'on' if not request.args.get('action') }}" href="?{{ qs(action=None, page=None) }}">All</a>{% for a in actions %}<a class="chip {{ 'on' if request.args.get('action') == a }}" href="?{{ qs(action=a, page=None) }}">{{ a }}</a>{% endfor %}</div>
+<div class="card"><table class="t compact"><thead><tr><th>When (UTC)</th><th>User</th><th>App</th><th>Action</th><th>Entity</th><th>Detail</th></tr></thead><tbody>
+{% for a in pag.items %}<tr><td>{{ a.at.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ a.user.username if a.user else 'system' }}</td><td><span class="pill">{{ a.app }}</span></td><td>{{ a.action }}</td><td class="mono small">{{ a.entity }}{% if a.entity_id %} #{{ a.entity_id }}{% endif %}</td><td class="wrap small">{{ a.detail }}</td></tr>{% else %}<tr><td colspan="6"><div class="empty">No entries match.</div></td></tr>{% endfor %}</tbody></table>{{ pager(pag) }}</div>
+{% endblock %}

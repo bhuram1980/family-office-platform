@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "Users" %}
+{% block content %}
+<div class="ph"><div><h1>Users</h1><div class="sub">{{ users|length }} accounts · single sign-on across all apps</div></div><div class="acts"><a class="btn dark" href="{{ url_for('admin.user_new') }}">+ New user</a></div></div>
+<div class="chips"><a class="chip {{ 'on' if not request.args.get('role') }}" href="?">All</a>{% for r in roles %}<a class="chip {{ 'on' if request.args.get('role') == r }}" href="?role={{ r }}">{{ r|replace('_',' ')|title }}</a>{% endfor %}</div>
+<div class="card"><table class="t"><thead><tr><th>User</th><th>Role</th><th>Apps</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody>
+{% for u in users %}<tr><td><div style="display:flex;gap:9px;align-items:center"><span class="avatar" style="background:{{ u.color }}">{{ u.initials }}</span><div><a href="{{ url_for('admin.user_form', uid=u.id) }}"><b>{{ u.name }}</b></a><div class="tiny muted">{{ u.username }} · {{ u.email }} · {{ u.title or '' }}</div></div></div></td>
+<td>{% if u.role == 'super_admin' %}<span class="badge-sa">SUPER ADMIN</span>{% else %}<span class="pill {{ 'purple' if u.role == 'admin' else 'blue' if u.role == 'investor' else 'gray' }}">{{ u.role }}</span>{% endif %}</td>
+<td class="wrap small" style="max-width:340px">{% for a in u.apps %}<span class="pill outline" style="margin:1px">{{ APPS[a].short }}</span>{% endfor %}</td>
+<td>{% if u.locked %}<span class="pill red">Locked</span>{% elif not u.is_active_flag %}<span class="pill gray">Inactive</span>{% else %}<span class="pill green">Active</span>{% endif %}{% if u.must_change_pw %} <span class="pill amber">Must change PW</span>{% endif %}</td>
+<td class="small">{{ u.last_login_at|ago }}</td>
+<td class="r" style="white-space:nowrap"><a class="btn sm" href="{{ url_for('admin.user_form', uid=u.id) }}">Edit</a>
+{% if u.locked %}{{ post_button(url_for('admin.user_action', uid=u.id, action='unlock'), 'Unlock', 'btn sm') }}{% elif u.id != current_user.id %}{{ post_button(url_for('admin.user_action', uid=u.id, action='lock'), 'Lock', 'btn sm') }}{% endif %}
+{{ post_button(url_for('admin.user_action', uid=u.id, action='reset'), 'Reset PW', 'btn sm', confirm='Generate a temporary password?') }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

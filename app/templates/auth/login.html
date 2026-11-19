@@ -1,0 +1,19 @@
+{% extends "standalone.html" %}
+{% block title %}Sign in{% endblock %}
+{% block body %}
+<div class="dots" style="min-height:100vh;display:grid;place-items:center;padding:20px">
+  <div class="login-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px"><div class="sb-logo" style="--appc:#4f46e5">BF</div><div><div style="font-weight:650">{{ BRAND }}</div><div class="tiny muted">Single sign-on · all ten apps</div></div></div>
+    <div class="eyebrow">Private platform</div>
+    <h1 class="serif" style="font-size:30px;margin:6px 0 4px">Sign in</h1>
+    <p class="muted" style="margin:0 0 18px">One account for Stocks, Family Office, Deals, PE/VC, Documents, Philanthropy, Tasks, Real Estate, IR Portal and Admin.</p>
+    <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="lbl">Username or email</label><input class="inp" style="max-width:none" name="username" autofocus required autocomplete="username">
+      <label class="lbl" style="margin-top:12px">Password</label><input class="inp" style="max-width:none" type="password" name="password" required autocomplete="current-password">
+      <label class="small muted" style="display:flex;gap:6px;align-items:center;margin:12px 0"><input type="checkbox" name="remember"> Keep me signed in</label>
+      <button class="btn primary" style="width:100%;justify-content:center;padding:10px">Sign in →</button>
+    </form>
+    <p class="tiny muted" style="margin-top:16px">Seeded demo accounts are listed in the README. Five wrong passwords lock an account; an admin can unlock it.</p>
+  </div>
+</div>
+{% endblock %}

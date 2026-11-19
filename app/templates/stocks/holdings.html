@@ -1,0 +1,50 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips %}
+{% set page_title = "Holdings" %}
+{% block content %}
+<div class="ph"><div><h1>Holdings</h1><div class="sub">{{ pos|length }} positions · {{ t.long_mv|money }} long · {{ t.unrealized|money }} unrealized</div></div>
+<div class="acts"><a class="btn" href="{{ url_for('stocks.month_end') }}"><i class="ic" data-lucide="calendar-range"></i>Month-end</a><a class="btn" href="{{ url_for('stocks.securities_export') }}"><i class="ic" data-lucide="download"></i>Export</a>
+<a class="btn primary" href="{{ url_for('stocks.trade_log') }}#ticket"><i class="ic" data-lucide="plus"></i>Book a trade</a></div></div>
+{{ acct_chips(all_accts, codes, url_for('stocks.holdings')) }}
+<div class="tabs" data-tabs="tab">{% for k,l in [('positions','Positions'),('taxlots','Tax Lots'),('accounts','Accounts'),('margin','Margin'),('performance','Performance'),('details','Details'),('fundamentals','Fundamentals'),('comparison','Comparison')] %}<a href="?{{ qs(tab=k) }}" data-tab="{{ k }}">{{ l }}</a>{% endfor %}</div>
+
+<div class="tabpanel" data-group="tab" data-tab="positions"><div class="card"><div class="tbl-wrap"><table class="t sortable">
+<thead><tr><th>Ticker</th><th>Name</th><th class="r">Shares</th><th class="r">Avg cost</th><th class="r">Price</th><th class="r">Mkt value</th><th class="r">P&amp;L</th><th class="r">P&amp;L %</th><th class="r">DD %</th><th class="r">Weight</th><th>Accounts</th></tr></thead><tbody>
+{% for p in pos %}<tr><td><a class="tk" href="{{ url_for('stocks.charts', t=p.security.ticker) }}">{{ p.security.ticker }}</a></td><td>{{ p.security.name }}</td><td class="r">{{ p.shares|num }}</td><td class="r">{{ p.avg_cost|money(2) }}</td><td class="r">{{ p.security.price|money(2) }}</td>
+<td class="r"><b>{{ p.mv|money }}</b></td><td class="r {{ p.pnl|tone }}">{{ p.pnl|money }}</td><td class="r {{ p.pnl_pct|tone }}">{{ p.pnl_pct|pct(1) }}</td><td class="r {{ p.security.drawdown|tone }}">{{ p.security.drawdown|pct(1) }}</td>
+<td class="r">{{ (p.mv / t.long_mv * 100)|round(2) }}%</td><td class="small muted">{{ p.accounts|map(attribute='code')|join(', ') }}</td></tr>{% endfor %}</tbody>
+<tfoot><tr><td colspan="5">Total</td><td class="r">{{ t.long_mv|money }}</td><td class="r {{ t.unrealized|tone }}">{{ t.unrealized|money }}</td><td class="r">{{ t.unrealized_pct|pct(1) }}</td><td></td><td class="r">100%</td><td></td></tr></tfoot></table></div></div></div>
+
+<div class="tabpanel" data-group="tab" data-tab="taxlots"><div class="card"><div class="tbl-wrap"><table class="t sortable compact">
+<thead><tr><th>Ticker</th><th>Account</th><th>Acquired</th><th>Term</th><th class="r">Shares</th><th class="r">Cost/sh</th><th class="r">Cost</th><th class="r">Value</th><th class="r">Gain</th></tr></thead><tbody>
+{% for l in lots %}{% set val = l.shares * l.security.price %}{% set cost = l.shares * l.cost_per_share %}<tr><td><span class="tk">{{ l.security.ticker }}</span></td><td>{{ l.account.code }}</td><td>{{ l.acquired|dfmt }}</td>
+<td>{% if (today - l.acquired).days > 365 %}<span class="pill green">Long</span>{% else %}<span class="pill amber">Short</span>{% endif %}</td><td class="r">{{ l.shares|num }}</td><td class="r">{{ l.cost_per_share|money(2) }}</td><td class="r">{{ cost|money }}</td><td class="r">{{ val|money }}</td><td class="r {{ (val-cost)|tone }}">{{ (val-cost)|money }}</td></tr>{% endfor %}</tbody></table></div></div></div>
+
+<div class="tabpanel" data-group="tab" data-tab="accounts"><div class="card"><table class="t">
+<thead><tr><th>Account</th><th>Custodian</th><th>Type</th><th class="r">Positions</th><th class="r">Long value</th><th class="r">Unrealized</th><th class="r">Cash</th><th class="r">Margin debt</th><th class="r">Net</th><th></th></tr></thead><tbody>
+{% for r in acct_rows %}<tr><td><b>{{ r.a.name }}</b> <span class="tiny muted">{{ r.a.acct_no }}</span></td><td>{{ r.a.custodian }}</td><td>{{ r.a.kind }}</td><td class="r">{{ r.n }}</td><td class="r">{{ r.mv|money }}</td><td class="r {{ r.pnl|tone }}">{{ r.pnl|money }}</td><td class="r">{{ r.a.cash|money }}</td><td class="r {{ 'neg' if r.a.margin_debt }}">{{ r.a.margin_debt|money }}</td><td class="r"><b>{{ r.net|money }}</b></td>
+<td class="r"><a class="btn sm" href="{{ url_for('stocks.accounts_edit', obj_id=r.a.id) }}">Edit</a></td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="tabpanel" data-group="tab" data-tab="margin"><div class="grid g3">
+{{ kpi('Margin debt', t.margin|money, 'across ' ~ (acct_rows|selectattr('a.margin_debt')|list|length) ~ ' accounts', 'neg', '#ef4444') }}
+{{ kpi('Margin / long value', t.margin_use|round(1) ~ '%', 'limit 35%', '', '#f59e0b') }}
+{{ kpi('Headroom to limit', (t.long_mv * 0.35 - t.margin)|money, 'additional borrowing capacity', '', '#10b981') }}</div>
+<div class="card"><table class="t"><thead><tr><th>Account</th><th class="r">Long value</th><th class="r">Margin debt</th><th class="r">Usage</th><th style="width:30%">vs limit</th></tr></thead><tbody>
+{% for r in acct_rows %}<tr><td>{{ r.a.name }}</td><td class="r">{{ r.mv|money }}</td><td class="r">{{ r.a.margin_debt|money }}</td><td class="r">{{ r.margin_pct|round(1) }}%</td>
+<td><div class="bar"><i style="width:{{ [r.margin_pct / (r.a.margin_limit_pct or 35) * 100, 100]|min }}%;--bc:{{ '#ef4444' if r.margin_pct > 30 else '#6366f1' }}"></i></div></td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="tabpanel" data-group="tab" data-tab="performance">
+<div class="card" style="margin-bottom:14px"><table class="t"><thead><tr><th></th>{% for k in ['1D','1W','1M','3M','6M','YTD','1Y'] %}<th class="r">{{ k }}</th>{% endfor %}</tr></thead>
+<tbody><tr><td><b>Selected accounts</b></td>{% for k in ['1D','1W','1M','3M','6M','YTD','1Y'] %}<td class="r {{ rets.get(k)|tone }}">{{ rets.get(k)|pct }}</td>{% endfor %}</tr></tbody></table></div>
+<div class="card"><table class="t sortable"><thead><tr><th>Ticker</th><th class="r">Day</th><th class="r">1M</th><th class="r">Since cost</th><th class="r">Day P&amp;L</th><th class="r">Unrealized</th></tr></thead><tbody>
+{% for r in perf %}<tr><td><span class="tk">{{ r.p.security.ticker }}</span></td><td class="r {{ r.p.security.change_pct|tone }}">{{ r.p.security.change_pct|pct }}</td><td class="r {{ r.m1|tone }}">{{ r.m1|pct }}</td><td class="r {{ r.p.pnl_pct|tone }}">{{ r.p.pnl_pct|pct(1) }}</td><td class="r {{ r.p.day_pnl|tone }}">{{ r.p.day_pnl|money }}</td><td class="r {{ r.p.pnl|tone }}">{{ r.p.pnl|money }}</td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="tabpanel" data-group="tab" data-tab="details"><div class="card"><table class="t sortable compact"><thead><tr><th>Ticker</th><th>Sector</th><th>Theme</th><th>Category</th><th class="r">Conviction</th><th>Review</th><th>Next earnings</th><th class="r">52w high</th><th class="r">52w low</th><th></th></tr></thead><tbody>
+{% for p in pos %}{% set s = p.security %}<tr><td><span class="tk">{{ s.ticker }}</span></td><td>{{ s.sector }}</td><td>{{ s.theme }}</td><td>{{ s.category }}</td><td class="r">{{ s.conviction }}</td><td>{{ status(s.review_status) }}</td><td>{{ s.next_earnings|dfmt }}</td><td class="r">{{ s.high_52w|money(2) }}</td><td class="r">{{ s.low_52w|money(2) }}</td><td><a class="btn sm" href="{{ url_for('stocks.securities_edit', obj_id=s.id) }}">Edit</a></td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="tabpanel" data-group="tab" data-tab="fundamentals"><div class="card"><table class="t sortable compact"><thead><tr><th>Ticker</th><th class="r">Mkt cap ()</th><th class="r">P/E</th><th class="r">EPS</th><th class="r">Div yield</th><th class="r">Rev growth</th><th class="r">Gross margin</th><th class="r">Beta</th></tr></thead><tbody>
+{% for p in pos %}{% set s = p.security %}<tr><td><span class="tk">{{ s.ticker }}</span></td><td class="r">{{ s.mkt_cap_b|num(1) }}</td><td class="r">{{ s.pe|num(1) }}</td><td class="r">{{ s.eps|num(2) }}</td><td class="r">{{ s.div_yield|pct(2, False) }}</td><td class="r {{ s.revenue_growth|tone }}">{{ s.revenue_growth|pct(0) }}</td><td class="r">{{ s.gross_margin|pct(1, False) }}</td><td class="r">{{ s.beta }}</td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="tabpanel" data-group="tab" data-tab="comparison"><div class="card"><div class="card-h"><h3>Position by account</h3><span class="small muted">same security held in several accounts</span></div><table class="t sortable compact"><thead><tr><th>Ticker</th><th>Account</th><th class="r">Shares</th><th class="r">Avg cost</th><th class="r">Value</th><th class="r">P&amp;L %</th></tr></thead><tbody>
+{% for p in by_acct|sort(attribute='security.ticker') %}<tr><td><span class="tk">{{ p.security.ticker }}</span></td><td>{{ (p.accounts|first).code }}</td><td class="r">{{ p.shares|num }}</td><td class="r">{{ p.avg_cost|money(2) }}</td><td class="r">{{ p.mv|money }}</td><td class="r {{ p.pnl_pct|tone }}">{{ p.pnl_pct|pct(1) }}</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

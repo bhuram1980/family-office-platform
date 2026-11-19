@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "macros.html" import sort_th, pager, post_button %}
+{% set page_title = r.title %}
+{% set active_nav = r.nav or r.endpoint('list') %}
+{% block content %}
+<div class="ph">
+  <div><h1>{{ r.title }}</h1><div class="sub">{{ r.subtitle or (pag.total ~ ' records') }}</div></div>
+  <div class="acts">
+    <form method="get" class="search" style="min-width:240px;padding:4px 8px"><i data-lucide="search" style="width:13px;height:13px"></i>
+      {% for k,v in request.args.items() if k not in ('q','page') %}<input type="hidden" name="{{k}}" value="{{v}}">{% endfor %}
+      <input name="q" value="{{ request.args.get('q','') }}" placeholder="Search {{ r.title|lower }}…" style="border:0;outline:0;font:inherit;width:100%"></form>
+    <a class="btn" href="{{ url_for(r.endpoint('export'), **request.args) }}"><i class="ic" data-lucide="download"></i>Export CSV</a>
+    {% for label, ep in r.extra_actions %}<a class="btn" href="{{ url_for(ep) }}">{{ label }}</a>{% endfor %}
+    {% if current_user.can_write and not r.readonly %}<a class="btn primary" href="{{ url_for(r.endpoint('new')) }}"><i class="ic" data-lucide="plus"></i>New {{ r.singular|lower }}</a>{% endif %}
+  </div>
+</div>
+{% for fname in r.filters %}
+<div class="chips"><span class="upper" style="margin-right:4px">{{ fname|replace('_',' ') }}</span>
+  <a class="chip {{ 'on' if not request.args.get(fname) }}" href="?{{ qs(**{fname: None, 'page': None}) }}">All</a>
+  {% for v in r.filter_values(fname) %}<a class="chip {{ 'on' if request.args.get(fname) == v|string }}" href="?{{ qs(**{fname: v, 'page': None}) }}">{{ v }}</a>{% endfor %}
+</div>
+{% endfor %}
+<div class="card"><div class="tbl-wrap">
+<table class="t">
+  <thead><tr>{% for f in r.list_fields %}{{ sort_th(f.label, f.name, f.align or '') }}{% endfor %}<th></th></tr></thead>
+  <tbody>
+  {% for o in items %}
+  <tr>{% for f in r.list_fields %}<td class="{{ f.align or '' }} {{ 'wrap' if f.type == 'text' }}">{% if loop.first %}<a href="{{ r.row_link(o) if r.row_link else url_for(r.endpoint('edit'), obj_id=o.id) }}" style="font-weight:600">{{ f.display(o) }}</a>{% else %}{{ f.display(o) }}{% endif %}</td>{% endfor %}
+    <td class="r">{% if current_user.can_write and not r.readonly %}<a class="btn sm" href="{{ url_for(r.endpoint('edit'), obj_id=o.id) }}">Edit</a>
+      {{ post_button(url_for(r.endpoint('delete'), obj_id=o.id), 'Delete', 'btn sm', confirm='Delete this ' ~ r.singular|lower ~ '?') }}{% endif %}</td></tr>
+  {% else %}<tr><td colspan="99"><div class="empty">Nothing here yet.</div></td></tr>{% endfor %}
+  </tbody>
+</table></div>
+{{ pager(pag) }}
+</div>
+{% endblock %}

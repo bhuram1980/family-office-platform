@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "API usage" %}
+{% block content %}
+<div class="ph"><div><h1>API usage</h1><div class="sub">External API calls and spend, last 30 days · {{ total|money(2) }}</div></div><div class="acts"><a class="btn" href="{{ url_for('admin.credentials_list') }}">Credentials →</a></div></div>
+<div class="card" style="margin-bottom:14px"><div class="card-b">{{ chartbox(chart, 300) }}</div></div>
+<div class="card"><table class="t"><thead><tr><th>Provider</th><th>App</th><th class="r">Calls</th><th class="r">Spend</th><th class="r">Per 1k calls</th></tr></thead><tbody>
+{% for (p, a), v in agg %}<tr><td>{{ p }}</td><td>{{ APPS[a].name }}</td><td class="r">{{ v[0]|num }}</td><td class="r">{{ v[1]|money(2) }}</td><td class="r">{{ (v[1] / v[0] * 1000)|money(2) if v[0] else '—' }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

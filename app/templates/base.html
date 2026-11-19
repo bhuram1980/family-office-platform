@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}{{ page_title or g.app.name }}{% endblock %} — {{ BRAND }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+<script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%234f46e5'/><text x='16' y='21' font-size='13' font-family='Arial' font-weight='700' fill='white' text-anchor='middle'>BF</text></svg>">
+</head>
+{% set A = g.app %}
+<body class="{% if A.dark %}sb-dark{% endif %} {% if A.fill %}act-fill{% endif %}" style="--appc:{{ A.color }}" hx-headers='{"X-CSRFToken": "{{ csrf_token() }}"}'>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">{{ A.short }}</div>
+      <div><div class="sb-title">{{ BRAND }}</div><div class="sb-sub">{{ A.sub }}</div></div>
+    </div>
+    <div class="sb-switch" data-dropdown>
+      <button type="button"><span><span class="dot"></span>{{ A.name }}</span><i data-lucide="chevrons-up-down" style="width:13px;height:13px"></i></button>
+      <div class="sb-menu">
+        {% for ap in APPS.values() if current_user.can_access(ap.id) %}
+        <a href="{{ url_for(ap.id.replace('-','_') ~ '.dashboard') }}" class="{{ 'cur' if ap.id == A.id }}"><span class="mi" style="background:{{ ap.color }}">{{ ap.short }}</span>{{ ap.name }}</a>
+        {% endfor %}
+        <a href="{{ url_for('public.landing') }}" style="border-top:1px solid var(--line2);margin-top:4px;border-radius:0 0 7px 7px"><i data-lucide="home" style="width:14px;height:14px"></i> Platform home</a>
+      </div>
+    </div>
+    <div class="sb-user">
+      <div class="avatar" style="background:{{ current_user.color }}">{{ current_user.initials }}</div>
+      <div style="min-width:0">
+        <div class="nm">{{ current_user.first_name }}</div>
+        {% if current_user.role == 'super_admin' %}<span class="badge-sa">SUPER ADMIN</span>
+        {% else %}<div class="tiny muted">{{ current_user.role|replace('_',' ')|title }}</div>{% endif %}
+      </div>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="out" style="margin-left:auto"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button title="Sign out" style="all:unset;cursor:pointer;color:inherit"><i data-lucide="log-out" style="width:14px;height:14px"></i></button></form>
+    </div>
+    <nav class="sb-nav">
+      {% for sec in A.nav %}
+        {% if sec.collapsible %}<details open>{% if sec.title %}<summary class="sb-sec">{{ sec.title }}</summary>{% endif %}
+        {% elif sec.title %}<div class="sb-sec">{{ sec.title }}</div>{% endif %}
+        {% for it in sec['items'] %}
+          {% set active = request.endpoint == it.ep or (active_nav is defined and active_nav == it.ep) %}
+          <a class="ni {{ 'sub' if it.sub }} {{ 'active' if active }}" href="{{ url_for(it.ep, **it.args) }}">
+            {% if not it.sub %}<i class="ic" data-lucide="{{ it.icon }}"></i>{% endif %}{{ it.label }}
+            {% if it.badge %}{% set bc = badge_count(it.badge) %}{% if bc %}<span class="cnt {{ 'red' if it.badge in ('proposals','overdue') }}">{{ bc }}</span>{% endif %}{% endif %}
+          </a>
+        {% endfor %}
+        {% if sec.collapsible %}</details>{% endif %}
+      {% endfor %}
+    </nav>
+    {% block sidebar_extra %}{% endblock %}
+    <div class="sb-foot">
+      <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button style="all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;color:inherit" class="muted"><i class="ic" data-lucide="log-out"></i> Sign out</button></form>
+    </div>
+  </aside>
+  <main class="main">
+    {% block topbar %}{% endblock %}
+    <div class="content {% block content_class %}{% endblock %}">
+      {% for msg in announcements_active() %}<div class="note {{ 'amber' if msg.level == 'warning' }}"><b>{{ msg.title }}</b>{% if msg.body %} — {{ msg.body }}{% endif %}</div>{% endfor %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+<div class="env-pill">{{ BRAND }} · {{ current_user.role|replace('_',' ') }} · {% if current_user.can_write %}read/write{% else %}read-only{% endif %}</div>
+<div id="toast" class="toast"></div>
+<script id="flashes" type="application/json">{{ get_flashed_messages(with_categories=true)|tojson }}</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

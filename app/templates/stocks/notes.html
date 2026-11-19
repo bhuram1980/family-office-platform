@@ -1,0 +1,11 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Notes" %}
+{% block content %}
+<div class="ph"><div><h1>Notes</h1><div class="sub">Research notes and desk policies</div></div><div class="acts"><a class="btn" href="{{ url_for('stocks.note_list') }}">Table view</a></div></div>
+<div class="grid g12"><form class="card" method="post" action="{{ url_for('stocks.quick_note') }}"><div class="card-h"><h3>New note</h3></div><div class="card-b">{{ csrf() }}
+<input class="inp" style="max-width:none" name="title" placeholder="Title" required><select class="inp" style="max-width:none;margin-top:8px" name="security_id"><option value="">— no ticker</option>{% for s in securities %}<option value="{{ s.id }}">{{ s.ticker }}</option>{% endfor %}</select>
+<textarea class="inp" style="max-width:none;margin-top:8px;min-height:140px" name="body" placeholder="What did you learn?"></textarea><button class="btn primary" style="margin-top:8px" {% if not current_user.can_write %}disabled{% endif %}>Save note</button></div></form>
+<div class="stack">{% for n in items %}<div class="card"><div class="card-h"><div><h3>{% if n.pinned %}📌 {% endif %}{{ n.title }}</h3><div class="csub">{{ n.author.name if n.author }} · {{ n.created_at|ago }}{% if n.security %} · <a href="{{ url_for('stocks.notes', t=n.security.ticker) }}">{{ n.security.ticker }}</a>{% endif %}</div></div>
+<div><a class="btn sm" href="{{ url_for('stocks.note_edit', obj_id=n.id) }}">Edit</a>{{ post_button(url_for('stocks.note_delete', obj_id=n.id), 'Delete', 'btn sm', confirm='Delete note?') }}</div></div><div class="card-b prose"><p>{{ n.body }}</p></div></div>{% else %}<div class="card"><div class="empty">No notes.</div></div>{% endfor %}</div></div>
+{% endblock %}

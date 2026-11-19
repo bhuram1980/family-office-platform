@@ -1,0 +1,12 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Market" %}
+{% block content %}
+<div class="ph"><div><a class="small" href="{{ url_for('stocks.exposure') }}">← Exposure</a><h1>Market</h1><div class="sub">Indices, sector moves in the book and the day's biggest movers</div></div></div>
+<div class="grid g4">{% for i in idx %}{{ kpi(i.name, '{:,.2f}'.format(i.value), (('%+.2f'|format(i.change_pct)) ~ '% today'), i.change_pct|tone) }}{% endfor %}</div>
+<div class="grid g21"><div class="card"><div class="card-h"><h3>S&amp;P 500 — 1 year</h3></div><div class="card-b">{{ chartbox(chart, 280) }}</div></div>
+<div class="card"><div class="card-h"><h3>Book P&amp;L by sector today</h3></div><table class="t compact"><tbody>{% for s, v in sec_moves %}<tr><td>{{ s }}</td><td class="r {{ v[0]|tone }}">{{ v[0]|money }}</td><td class="r small muted">{{ v[1]|money_short }}</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="grid g3"><div class="card"><div class="card-h"><h3 class="pos">Up most today</h3></div><table class="t compact"><tbody>{% for s in up %}<tr><td><span class="tk">{{ s.ticker }}</span></td><td>{{ s.price|money(2) }}</td><td class="r pos">{{ s.change_pct|pct }}</td></tr>{% endfor %}</tbody></table></div>
+<div class="card"><div class="card-h"><h3 class="neg">Down most today</h3></div><table class="t compact"><tbody>{% for s in down %}<tr><td><span class="tk">{{ s.ticker }}</span></td><td>{{ s.price|money(2) }}</td><td class="r neg">{{ s.change_pct|pct }}</td></tr>{% endfor %}</tbody></table></div>
+<div class="card"><div class="card-h"><h3>Macro drivers</h3></div><table class="t compact"><tbody>{% for d in drivers %}<tr><td><b>{{ d.code }}</b></td><td class="r">{{ d.value|num(2) }}</td><td class="r {{ d.change_1d|tone }}">{{ d.change_1d|pct }}</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

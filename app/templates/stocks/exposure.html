@@ -1,0 +1,18 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Exposure" %}
+{% block content %}
+<div class="ph"><div><h1>Exposure</h1><div class="sub">Where the book is concentrated and what moves it</div></div><div class="acts"><a class="btn" href="{{ url_for('stocks.market') }}">Market →</a></div></div>
+<div class="tabs" data-tabs="tab"><a href="?tab=exposure" data-tab="exposure">Exposure</a><a href="?tab=analytics" data-tab="analytics">Analytics</a><a href="?tab=drivers" data-tab="drivers">Drivers</a></div>
+<div class="tabpanel" data-group="tab" data-tab="exposure">
+<div class="grid g4">{{ kpi('Gross long', t.long_mv|money_short, t.positions|length ~ ' positions', '', '#6366f1') }}{{ kpi('Net exposure', (t.long_mv - t.margin)|money_short, 'long less margin debt', '', '#10b981') }}
+{{ kpi('Beta-adjusted', (t.long_mv * beta)|money_short, 'portfolio beta ' ~ beta|round(2), '', '#f59e0b') }}{{ kpi('Top-10 weight', top10|round(1) ~ '%', 'of long value', '', '#8b5cf6') }}</div>
+<div class="grid g2"><div class="card"><div class="card-h"><h3>By sector</h3></div><div class="card-b">{{ chartbox(sector_chart, 300) }}</div></div>
+<div class="card"><div class="card-h"><h3>By theme</h3><a class="right" href="{{ url_for('stocks.themes') }}">Themes →</a></div><div class="card-b">{{ chartbox(theme_chart, 300) }}</div></div></div>
+<div class="card"><table class="t sortable"><thead><tr><th>Sector</th><th class="r">Market value</th><th class="r">Weight</th></tr></thead><tbody>{% for s, v in sectors %}<tr><td>{{ s }}</td><td class="r">{{ v|money }}</td><td class="r">{{ (v / t.long_mv * 100)|round(1) }}%</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="tabpanel" data-group="tab" data-tab="analytics"><div class="card"><div class="card-h"><h3>Concentration &amp; risk by position</h3></div><table class="t sortable compact"><thead><tr><th>Ticker</th><th class="r">Weight</th><th class="r">Beta</th><th class="r">Beta-adj weight</th><th class="r">Drawdown</th><th class="r">Cumulative weight</th></tr></thead><tbody>
+{% set ns = namespace(c=0) %}{% for p in pos %}{% set w = p.mv / t.long_mv * 100 %}{% set ns.c = ns.c + w %}<tr><td><span class="tk">{{ p.security.ticker }}</span></td><td class="r {{ 'neg' if w > 6 }}">{{ w|round(2) }}%</td><td class="r">{{ p.security.beta }}</td><td class="r">{{ (w * (p.security.beta or 1))|round(2) }}%</td><td class="r {{ p.security.drawdown|tone }}">{{ p.security.drawdown|pct(1) }}</td><td class="r">{{ ns.c|round(1) }}%</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="tabpanel" data-group="tab" data-tab="drivers"><div class="card"><table class="t"><thead><tr><th>Driver</th><th>Kind</th><th class="r">Level</th><th class="r">Δ 1d</th><th class="r">Names exposed</th><th class="r">$-beta</th><th class="r">Est. impact today</th><th>Most sensitive</th></tr></thead><tbody>
+{% for r in driver_rows %}<tr><td><b>{{ r.d.code }}</b> <span class="small muted">{{ r.d.name }}</span></td><td><span class="pill">{{ r.d.kind }}</span></td><td class="r">{{ r.d.value|num(2) }}</td><td class="r {{ r.d.change_1d|tone }}">{{ r.d.change_1d|pct }}</td><td class="r">{{ r.n }}</td><td class="r">{{ r.dollar_beta|money_short }}</td><td class="r {{ r.impact|tone }}">{{ r.impact|money }}</td>
+<td class="small">{% for e in r.es[:4] %}<span class="pill {{ 'green' if e.beta > 0 else 'red' }}">{{ e.security.ticker }} {{ '%+.2f'|format(e.beta) }}</span> {% endfor %}</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

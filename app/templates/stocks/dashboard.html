@@ -1,0 +1,102 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars %}
+{% set page_title = "Portfolio Command Center" %}
+{% block content %}
+<div class="ph">
+  <div><h1>Portfolio Command Center</h1><div class="sub">{{ pos|length }} tickers across {{ t.accounts|length }} accounts · {{ t.lots }} tax lots · prices as of {{ asof|dfmt }}</div></div>
+  <div class="acts"><a class="btn" href="{{ url_for('stocks.securities_export') }}"><i class="ic" data-lucide="download"></i>Export</a>
+    <a class="btn" href="{{ url_for('stocks.daily_review') }}"><i class="ic" data-lucide="mail"></i>Daily review</a></div>
+</div>
+<div class="tabs" data-tabs="tab"><a href="?tab=command" data-tab="command">Command Center</a><a href="?tab=daily" data-tab="daily">Daily Report</a><a href="?tab=earnings" data-tab="earnings">Earnings</a><a href="?tab=news" data-tab="news">News</a></div>
+
+<div class="tabpanel" data-group="tab" data-tab="command">
+<div class="card" style="margin-bottom:14px">
+  <div class="grid g3" style="margin:0;gap:0">
+    <div style="padding:14px 16px;border-top:3px solid #6366f1;border-radius:10px 0 0 0"><div class="upper">Total net assets <span class="muted" style="text-transform:none;font-weight:400">· {{ t.accounts|length }} accounts</span></div>
+      <div class="kv lg" style="font-size:28px;font-weight:700;margin-top:4px">{{ t.net|money }}</div><div class="small muted">{{ t.long_mv|money }} long · {{ t.lots }} lots · {{ pos|length }} tickers</div></div>
+    <div style="padding:14px 16px;border-top:3px solid #10b981;border-left:1px solid var(--line2)"><div class="upper">Unrealized P&amp;L</div>
+      <div class="{{ t.unrealized|tone }}" style="font-size:28px;font-weight:700;margin-top:4px">{{ t.unrealized|money }}</div><div class="small {{ t.unrealized|tone }}">{{ t.unrealized_pct|pct(1) }} on cost · today {{ t.day_pnl|money }}</div></div>
+    <div style="padding:14px 16px;border-top:3px solid #f59e0b;border-left:1px solid var(--line2);border-radius:0 10px 0 0"><div class="upper">Cash &amp; margin</div>
+      <div class="{{ t.cash_net|tone }}" style="font-size:28px;font-weight:700;margin-top:4px">{{ t.cash_net|money }}</div><div class="small muted">{{ t.cash|money }} cash · {{ t.margin|money }} margin debt · {{ t.margin_use|round(1) }}% / 35% limit</div></div>
+  </div>
+  <div style="border-top:1px solid var(--line2);padding:12px 16px">
+    <div class="upper" style="margin-bottom:8px">Asset breakdown <span class="muted" style="text-transform:none;font-weight:400">· custodian groupings; money-market funds count as cash-like</span></div>
+    <div class="grid g5" style="margin:0">
+      {% for c in ['Public Equity','Money Market','Alternative Inv.','Other Inv.'] %}<div><div class="tiny upper">{{ c }}</div><div style="font-weight:650;font-size:15px;margin-top:3px" class="mono">{{ (t.by_cat.get(c, 0))|money }}</div></div>{% endfor %}
+      <div><div class="tiny upper">Cash, deposits &amp; MMF</div><div style="font-weight:650;font-size:15px;margin-top:3px" class="mono {{ t.cash_net|tone }}">{{ t.cash_net|money }}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:14px;border-top:3px solid #8b5cf6">
+  <div class="card-h"><h3>Returns <span class="muted small" style="font-weight:400">· constant-holdings return vs S&amp;P 500 · price-weighted</span></h3><span class="small muted">as of {{ asof }}</span></div>
+  <table class="t"><thead><tr><th></th>{% for k in ['1D','1W','1M','3M','6M','YTD','1Y'] %}<th class="r">{{ k }}</th>{% endfor %}</tr></thead>
+  <tbody><tr><td><b>Portfolio</b></td>{% for k in ['1D','1W','1M','3M','6M','YTD','1Y'] %}<td class="r {{ rets.get(k)|tone }}"><b>{{ rets.get(k)|pct }}</b></td>{% endfor %}</tr>
+  <tr><td class="muted">S&amp;P 500</td>{% for k in ['1D','1W','1M','3M','6M','YTD','1Y'] %}<td class="r {{ brets.get(k)|tone }}">{{ brets.get(k)|pct }}</td>{% endfor %}</tr></tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:14px">
+  <div class="card-h"><h3>Pending Trade Proposals <span class="pill amber" style="margin-left:6px">{{ proposals|length }} awaiting review</span></h3><a class="right" href="{{ url_for('stocks.actions') }}">Open Trading Center →</a></div>
+  <table class="t compact"><thead><tr><th>Ticker</th><th>Type</th><th class="r">Shares</th><th class="r">Price</th><th class="r">Value</th><th>Account</th><th>Reason</th><th>By</th><th></th></tr></thead><tbody>
+  {% for p in proposals %}<tr><td><a class="tk" href="{{ url_for('stocks.charts', t=p.security.ticker) }}">{{ p.security.ticker }}</a></td>
+    <td><span class="pill {{ 'green' if p.action in ('BUY','ADD') else 'amber' }}">{{ p.action }}</span></td><td class="r">{{ p.shares|num }}</td>
+    <td class="r">{{ (p.limit_price or p.security.price)|money(2) }}</td><td class="r">{{ (p.shares * (p.limit_price or p.security.price))|money }}</td>
+    <td>{{ p.account.code }}</td><td class="wrap small" style="max-width:420px">{{ p.reason }}</td><td>{{ p.proposed_by.first_name if p.proposed_by }}</td>
+    <td class="r" style="white-space:nowrap">{% if current_user.is_admin %}{{ post_button(url_for('stocks.decide', pid=p.id, decision='approve'), 'Approve', 'btn sm green') }}{% endif %}{{ post_button(url_for('stocks.decide', pid=p.id, decision='reject'), 'Reject', 'btn sm') }}</td></tr>
+  {% else %}<tr><td colspan="9"><div class="empty">No proposals waiting.</div></td></tr>{% endfor %}</tbody></table>
+</div>
+
+<div class="grid g3">
+  <div class="card"><div class="card-h"><h3 class="pos">Top Gainers</h3><span class="small muted">vs cost</span></div><table class="t compact"><tbody>
+    {% for p in gainers %}<tr><td><a class="tk" href="{{ url_for('stocks.charts', t=p.security.ticker) }}">{{ p.security.ticker }}</a></td><td class="r pos"><b>{{ p.pnl_pct|pct(1) }}</b></td><td class="r pos">{{ p.pnl|money }}</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card"><div class="card-h"><h3 class="neg">Top Losers</h3><span class="small muted">vs cost</span></div><table class="t compact"><tbody>
+    {% for p in losers %}<tr><td><a class="tk" href="{{ url_for('stocks.charts', t=p.security.ticker) }}">{{ p.security.ticker }}</a></td><td class="r neg"><b>{{ p.pnl_pct|pct(1) }}</b></td><td class="r {{ p.pnl|tone }}">{{ p.pnl|money }}</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card"><div class="card-h"><h3>Portfolio Health</h3><a class="right" href="{{ url_for('stocks.review') }}">Review board →</a></div><div class="card-b">
+    <div class="grid g2" style="margin:0"><div><div class="upper">Stage distribution</div><div class="split" style="margin-top:8px"><span>Active</span><b>{{ pos|length }}</b></div></div>
+    <div><div class="upper">Conviction spread</div>{% for c in [5,4,3,2,1] %}<div style="display:grid;grid-template-columns:14px 1fr 26px;gap:6px;align-items:center;margin-top:5px" class="small"><span>{{ c }}</span><div class="bar"><i style="width:{{ (conv[c] / (pos|length or 1) * 100)|round }}%"></i></div><span class="r">{{ conv[c] }}</span></div>{% endfor %}</div></div>
+    <div style="margin-top:14px"><div class="split upper"><span>Margin usage</span><span>{{ t.margin_use|round(1) }}% / 35%</span></div><div class="bar" style="margin-top:6px"><i style="width:{{ [t.margin_use / 35 * 100, 100]|min }}%;--bc:{{ '#ef4444' if t.margin_use > 30 else '#6366f1' }}"></i></div></div>
+  </div></div>
+</div>
+
+<div class="grid g2">
+  <div class="card"><div class="card-h"><div><h3>Unrealized P&amp;L Spread</h3><div class="csub">Number of positions by return on cost</div></div></div><div class="card-b">
+    {{ chartbox({'type':'bar','data':{'labels':buckets,'datasets':[{'label':'Positions','data':hist,'backgroundColor':['#fca5a5','#fdba74','#fcd34d','#a7f3d0','#6ee7b7','#34d399','#10b981']}]}}, 230) }}</div></div>
+  <div class="card"><div class="card-h"><h3>Top Driver Movers</h3><a class="right" href="{{ url_for('stocks.exposure', tab='drivers') }}">See all →</a></div>
+    <table class="t compact"><thead><tr><th>Driver</th><th class="r">Δ 1d</th><th class="r">|z|</th><th class="r">Affected</th></tr></thead><tbody>
+    {% for d in drivers %}<tr><td><b>{{ d.code }}</b> <span class="tiny muted">{{ d.kind }}</span></td><td class="r {{ d.change_1d|tone }}">{{ d.change_1d|pct }}</td>
+      <td class="r {{ 'neg' if d.zscore > 2 else 'warn' if d.zscore > 1 }}"><b>{{ d.zscore }}</b></td><td class="r">{{ affected.get(d.id, 0) }}</td></tr>{% endfor %}</tbody></table></div>
+</div>
+<div class="card"><div class="card-h"><h3>Portfolio vs S&amp;P 500 — last 6 months</h3><a class="right" href="{{ url_for('stocks.comparison') }}">Comparison →</a></div><div class="card-b">{{ chartbox(perf_chart, 260) }}</div></div>
+</div>
+
+<div class="tabpanel" data-group="tab" data-tab="daily">
+  <div class="grid g4">
+    {{ kpi('Day P&L', t.day_pnl|money, 'mark-to-market since prior close', t.day_pnl|tone, '#6366f1') }}
+    {{ kpi('Net assets', t.net|money, t.accounts|length ~ ' accounts', '', '#10b981') }}
+    {{ kpi('Margin use', t.margin_use|round(1) ~ '%', 'limit 35%', 'neg' if t.margin_use > 30 else '', '#f59e0b') }}
+    {{ kpi('Pending proposals', proposals|length, 'awaiting decision', '', '#8b5cf6') }}
+  </div>
+  <div class="card"><div class="card-h"><h3>Today's movers in the book</h3><a href="{{ url_for('stocks.daily_review') }}" class="right">Full daily review →</a></div>
+  <table class="t sortable"><thead><tr><th>Ticker</th><th>Name</th><th class="r">Price</th><th class="r">Day %</th><th class="r">Day P&amp;L</th><th class="r">Mkt value</th></tr></thead><tbody>
+  {% for p in pos|sort(attribute='day_pnl') %}{% if loop.index <= 8 or loop.revindex <= 8 %}<tr><td><a class="tk" href="{{ url_for('stocks.charts', t=p.security.ticker) }}">{{ p.security.ticker }}</a></td><td>{{ p.security.name }}</td><td class="r">{{ p.security.price|money(2) }}</td>
+  <td class="r {{ p.security.change_pct|tone }}">{{ p.security.change_pct|pct }}</td><td class="r {{ p.day_pnl|tone }}">{{ p.day_pnl|money }}</td><td class="r">{{ p.mv|money }}</td></tr>{% endif %}{% endfor %}</tbody></table></div>
+  <div class="card" style="margin-top:14px"><div class="card-h"><h3>Recent activity</h3><a class="right" href="{{ url_for('stocks.trade_log') }}">Activity →</a></div>
+  <table class="t compact"><tbody>{% for x in recent_txns %}<tr><td>{{ x.day|dfmt }}</td><td><span class="pill">{{ x.kind }}</span></td><td>{{ x.security.ticker if x.security else '—' }}</td><td>{{ x.account.code }}</td><td class="r {{ x.amount|tone }}">{{ x.amount|money(2) }}</td><td class="muted small">{{ x.note or '' }}</td></tr>{% endfor %}</tbody></table></div>
+</div>
+
+<div class="tabpanel" data-group="tab" data-tab="earnings">
+  <div class="card"><div class="card-h"><h3>Upcoming earnings for holdings</h3><a class="right" href="{{ url_for('stocks.securities_list') }}">Edit dates →</a></div>
+  <table class="t sortable"><thead><tr><th>Date</th><th>Ticker</th><th>Name</th><th class="r">In</th><th class="r">Mkt value</th><th class="r">Weight</th><th class="r">P/E</th><th class="r">Rev growth</th></tr></thead><tbody>
+  {% for p in earnings %}<tr><td>{{ p.security.next_earnings|dfmt }}</td><td><a class="tk" href="{{ url_for('stocks.charts', t=p.security.ticker) }}">{{ p.security.ticker }}</a></td><td>{{ p.security.name }}</td>
+  <td class="r">{{ (p.security.next_earnings - today).days }}d</td><td class="r">{{ p.mv|money }}</td><td class="r">{{ (p.mv / t.long_mv * 100)|round(2) }}%</td><td class="r">{{ p.security.pe or '—' }}</td><td class="r">{{ p.security.revenue_growth|pct(0) }}</td></tr>{% endfor %}</tbody></table></div>
+</div>
+
+<div class="tabpanel" data-group="tab" data-tab="news">
+  <div class="grid g2">
+  <div class="card"><div class="card-h"><h3>Desk notes</h3><a class="right" href="{{ url_for('stocks.notes') }}">All notes →</a></div><div class="list">
+    {% for n in notes %}<div class="li"><span class="dotc blue"></span><div><div class="lt">{{ n.title }} {% if n.security %}<span class="pill">{{ n.security.ticker }}</span>{% endif %}</div><div class="ls">{{ n.body|truncate(160) }}</div><div class="tiny muted">{{ n.author.name if n.author }} · {{ n.created_at|ago }}</div></div></div>{% endfor %}</div></div>
+  <div class="card"><div class="card-h"><h3>Corporate actions</h3><a class="right" href="{{ url_for('stocks.corporate_actions_list') }}">Manage →</a></div><div class="list">
+    {% for a in actions %}<div class="li"><span class="dotc {{ 'green' if a.status == 'Processed' else '' }}"></span><div><div class="lt">{{ a.security.ticker }} · {{ a.kind }}</div><div class="ls">{{ a.detail }} · ex-date {{ a.ex_date|dfmt }}</div></div><div class="lr">{{ status(a.status) }}</div></div>{% endfor %}</div></div>
+  </div>
+</div>
+{% endblock %}

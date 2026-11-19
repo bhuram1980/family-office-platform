@@ -1,0 +1,13 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Categories" %}
+{% block content %}
+<div class="ph"><div><h1>Categories</h1><div class="sub">Custodian asset groupings used on the dashboard breakdown. Reassign a holding to move it.</div></div></div>
+<div class="grid g12"><div class="card"><div class="card-h"><h3>Mix</h3></div><div class="card-b">{{ chartbox(chart, 300) }}</div></div>
+<div class="card"><table class="t"><thead><tr><th>Category</th><th class="r">Positions</th><th class="r">Market value</th><th class="r">Unrealized</th><th class="r">Weight</th></tr></thead><tbody>
+{% for c, ps in rows %}{% set mv = ps|sum(attribute='mv') %}<tr><td><b>{{ c }}</b></td><td class="r">{{ ps|length }}</td><td class="r">{{ mv|money }}</td><td class="r {{ (ps|sum(attribute='pnl'))|tone }}">{{ (ps|sum(attribute='pnl'))|money }}</td><td class="r">{{ (mv / t.long_mv * 100)|round(1) }}%</td></tr>{% endfor %}</tbody></table></div></div>
+{% for c, ps in rows %}<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>{{ c }}</h3><span class="small muted">{{ ps|length }} holdings</span></div><table class="t compact"><tbody>
+{% for p in ps %}<tr><td style="width:90px"><span class="tk">{{ p.security.ticker }}</span></td><td>{{ p.security.name }}</td><td class="r">{{ p.mv|money }}</td>
+<td class="r" style="width:280px"><form method="post" action="{{ url_for('stocks.set_category') }}" style="display:flex;gap:6px;justify-content:flex-end">{{ csrf() }}<input type="hidden" name="security_id" value="{{ p.security.id }}">
+<select class="inp" name="category" style="width:170px;padding:3px 6px">{% for x in cats %}<option {{ 'selected' if x == c }}>{{ x }}</option>{% endfor %}</select><button class="btn sm" {% if not current_user.can_write %}disabled{% endif %}>Move</button></form></td></tr>{% endfor %}</tbody></table></div>{% endfor %}
+{% endblock %}

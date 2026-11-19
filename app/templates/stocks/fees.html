@@ -1,0 +1,11 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Fees" %}
+{% block content %}
+<div class="ph"><div><a class="small" href="{{ url_for('stocks.pnl') }}">← P&amp;L</a><h1>Fees &amp; costs</h1><div class="sub">Commissions, custody and advisory fees, foreign tax and margin interest · {{ total|money }} total</div></div></div>
+<div class="grid g21"><div class="card"><div class="card-h"><h3>By month</h3></div><div class="card-b">{{ chartbox(chart, 240) }}</div></div>
+<div class="card"><div class="card-h"><h3>By type</h3></div><div class="card-b">{{ bars(by_type, '#f59e0b', money=True) }}</div></div></div>
+<div class="grid g12"><div class="card"><div class="card-h"><h3>By account</h3></div><table class="t compact"><tbody>{% for a, v in by_acct %}<tr><td>{{ a }}</td><td class="r">{{ v|money }}</td></tr>{% endfor %}</tbody></table></div>
+<div class="card"><div class="card-h"><h3>Entries</h3></div><div style="max-height:460px;overflow:auto"><table class="t compact"><thead><tr><th>Date</th><th>Type</th><th>Account</th><th>Ticker</th><th class="r">Amount</th><th>Note</th></tr></thead><tbody>
+{% for x in txns %}<tr><td>{{ x.day|dfmt }}</td><td><span class="pill">{{ x.kind }}</span></td><td>{{ x.account.code }}</td><td>{{ x.security.ticker if x.security else '' }}</td><td class="r neg">{{ (x.amount if x.kind in ('FEE','INT') else -(x.fees or 0))|money(2) }}</td><td class="small muted">{{ x.note or 'Commission' }}</td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

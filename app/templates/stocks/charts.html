@@ -1,0 +1,14 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = s.ticker ~ " chart" %}
+{% block content %}
+<div class="ph"><div><h1>{{ s.ticker }} <span class="muted" style="font-weight:500">{{ s.name }}</span></h1><div class="sub">{{ s.sector }} · {{ s.theme }} · <b>{{ s.price|money(2) }}</b> <span class="{{ s.change_pct|tone }}">{{ s.change_pct|pct }}</span></div></div>
+<div class="acts"><form class="chips" style="margin:0"><input class="inp" name="t" value="{{ s.ticker }}" list="tks" style="width:120px"><datalist id="tks">{% for x in all_secs %}<option value="{{ x.ticker }}">{% endfor %}</datalist>
+{% for d,l in [(30,'1M'),(90,'3M'),(180,'6M'),(365,'1Y')] %}<button class="chip {{ 'on' if days == d }}" name="days" value="{{ d }}">{{ l }}</button>{% endfor %}</form>
+<a class="btn" href="{{ url_for('stocks.securities_edit', obj_id=s.id) }}">Edit security</a></div></div>
+<div class="grid g4">{{ kpi('52w high', s.high_52w|money(2), s.drawdown|pct(1) ~ ' from high', s.drawdown|tone) }}{{ kpi('52w low', s.low_52w|money(2)) }}{{ kpi('P/E', s.pe|num(1), 'beta ' ~ s.beta) }}{{ kpi('Next earnings', s.next_earnings|dfmt, 'conviction ' ~ s.conviction ~ '/5') }}</div>
+<div class="card" style="margin-bottom:14px"><div class="card-b">{{ chartbox(chart, 380) }}</div></div>
+<div class="grid g2"><div class="card"><div class="card-h"><h3>Open lots</h3></div><table class="t compact"><thead><tr><th>Account</th><th>Acquired</th><th class="r">Shares</th><th class="r">Cost</th><th class="r">Gain</th></tr></thead><tbody>
+{% for l in lots %}<tr><td>{{ l.account.code }}</td><td>{{ l.acquired|dfmt }}</td><td class="r">{{ l.shares|num }}</td><td class="r">{{ l.cost_per_share|money(2) }}</td><td class="r {{ (s.price - l.cost_per_share)|tone }}">{{ (l.shares * (s.price - l.cost_per_share))|money }}</td></tr>{% else %}<tr><td colspan="5"><div class="empty">Not held.</div></td></tr>{% endfor %}</tbody></table></div>
+<div class="card"><div class="card-h"><h3>Notes</h3><a class="right" href="{{ url_for('stocks.note_new') }}">+ Note</a></div><div class="list">{% for n in notes %}<div class="li"><div><div class="lt">{{ n.title }}</div><div class="ls">{{ n.body }}</div></div></div>{% else %}<div class="empty">No notes for {{ s.ticker }}.</div>{% endfor %}</div></div></div>
+{% endblock %}

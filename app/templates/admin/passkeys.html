@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "Passkeys" %}
+{% block content %}
+<div class="ph"><div><h1>Passkeys</h1><div class="sub">Registered authenticators. Registration needs HTTPS and a WebAuthn-capable browser; enable it by configuring WEBAUTHN_RP_ID on the server.</div></div></div>
+<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Mine</h3></div><table class="t"><tbody>{% for p in mine %}<tr><td><i data-lucide="fingerprint" style="width:14px;height:14px"></i> <b>{{ p.name }}</b></td><td class="small muted">added {{ p.created_at|dfmt }} · last used {{ p.last_used_at|ago }}</td>
+<td class="r"><form method="post" style="display:inline-flex;gap:6px">{{ csrf() }}<input type="hidden" name="id" value="{{ p.id }}"><input type="hidden" name="action" value="rename"><input class="inp" name="name" placeholder="Rename…" style="width:150px;padding:3px 8px"><button class="btn sm">Rename</button></form>
+{{ post_button(url_for('admin.passkeys'), 'Revoke', 'btn sm', confirm='Revoke this passkey?', fields={'id': p.id, 'action': 'revoke'}) }}</td></tr>{% else %}<tr><td><div class="empty">No passkeys registered.</div></td></tr>{% endfor %}</tbody></table></div>
+{% if others %}<div class="card"><div class="card-h"><h3>Other users (admin view)</h3></div><table class="t"><tbody>{% for p in others %}<tr><td>{{ p.user.name }}</td><td>{{ p.name }}</td><td class="small muted">last used {{ p.last_used_at|ago }}</td><td class="r">{{ post_button(url_for('admin.passkeys'), 'Revoke', 'btn sm', confirm='Revoke?', fields={'id': p.id, 'action': 'revoke'}) }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% endblock %}

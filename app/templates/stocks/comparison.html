@@ -1,0 +1,11 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Comparison" %}
+{% block content %}
+<div class="ph"><div><h1>Comparison</h1><div class="sub">Rebased performance, up to 8 tickers (SPX = S&amp;P 500)</div></div></div>
+<form class="chips" method="get"><input class="inp" name="t" value="{{ tickers|join(',') }}" list="tks" style="max-width:360px"><datalist id="tks">{% for s in all_secs %}<option value="{{ s.ticker }}">{% endfor %}</datalist>
+{% for d,l in [(30,'1M'),(90,'3M'),(180,'6M'),(365,'1Y')] %}<button class="chip {{ 'on' if days == d }}" name="days" value="{{ d }}">{{ l }}</button>{% endfor %}</form>
+<div class="card" style="margin-bottom:14px"><div class="card-b">{{ chartbox(chart, 380) }}</div></div>
+<div class="card"><table class="t"><thead><tr><th>Ticker</th><th>Name</th><th class="r">Price</th><th class="r">P/E</th><th class="r">Rev growth</th><th class="r">Gross margin</th><th class="r">Beta</th><th class="r">Div yield</th><th class="r">From 52w high</th></tr></thead><tbody>
+{% for s in secs %}<tr><td><span class="tk">{{ s.ticker }}</span></td><td>{{ s.name }}</td><td class="r">{{ s.price|money(2) }}</td><td class="r">{{ s.pe|num(1) }}</td><td class="r">{{ s.revenue_growth|pct(0) }}</td><td class="r">{{ s.gross_margin|pct(1, False) }}</td><td class="r">{{ s.beta }}</td><td class="r">{{ s.div_yield|pct(2, False) }}</td><td class="r {{ s.drawdown|tone }}">{{ s.drawdown|pct(1) }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

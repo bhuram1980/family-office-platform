@@ -1,0 +1,11 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Stocks settings" %}
+{% block content %}
+<div class="ph"><div><h1>Settings</h1><div class="sub">Limits and the daily review email. Admins can change these.</div></div></div>
+<form method="post" class="card" style="margin-bottom:14px"><div class="card-h"><h3>Risk &amp; workflow</h3></div><div class="card-b">{{ csrf() }}
+{% for k, l, d in keys %}<div class="form-row"><label>{{ l }}</label><input class="inp" name="{{ k }}" value="{{ vals[k] }}"></div>{% endfor %}
+<div style="text-align:right;margin-top:12px"><button class="btn primary" {% if not current_user.is_admin %}disabled{% endif %}>Save settings</button></div></div></form>
+<div class="card"><div class="card-h"><h3>Accounts</h3><a class="right" href="{{ url_for('stocks.accounts_new') }}">+ Add account</a></div><table class="t"><thead><tr><th>Name</th><th>Code</th><th>Custodian</th><th>Type</th><th class="r">Margin limit</th><th></th></tr></thead><tbody>
+{% for a in accts %}<tr><td>{{ a.name }}</td><td>{{ a.code }}</td><td>{{ a.custodian }}</td><td>{{ a.kind }}</td><td class="r">{{ a.margin_limit_pct }}%</td><td class="r"><a class="btn sm" href="{{ url_for('stocks.accounts_edit', obj_id=a.id) }}">Edit</a></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

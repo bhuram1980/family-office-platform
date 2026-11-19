@@ -1,0 +1,36 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips %}
+{% set page_title = "Portfolio Manager — Daily Review" %}
+{% macro probrow(r) %}<td><a class="tk" href="{{ url_for('stocks.charts', t=r.p.security.ticker) }}">{{ r.p.security.ticker }}</a> <span class="small muted">{{ r.p.security.name }}</span></td>{% endmacro %}
+{% block content %}
+<div class="ph"><div><h1>Portfolio Manager</h1><div class="sub">Daily review · {{ today|dfmt('%A, %B %d, %Y') }} · compared with {{ last_day|dfmt if last_day else 'no prior snapshot' }}</div></div>
+<div class="acts">{{ post_button(url_for('stocks.daily_snapshot'), "Save today's snapshot", 'btn', icon='save') }}
+<form method="post" action="{{ url_for('stocks.refresh') }}">{{ csrf() }}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn primary" {% if not current_user.can_write %}disabled{% endif %}><i class="ic" data-lucide="refresh-cw"></i>Refresh Prices</button></form></div></div>
+
+<div class="sec-title">What the numbers say</div>
+<div class="grid g5">
+  {{ kpi('Net assets', t.net|money_short, t.positions|length ~ ' positions', '', '#6366f1') }}
+  {{ kpi('Today', t.day_pnl|money, 'mark-to-market', t.day_pnl|tone, '#10b981') }}
+  {{ kpi('Unrealized', t.unrealized|money_short, t.unrealized_pct|pct(1) ~ ' on cost', t.unrealized|tone, '#0ea5e9') }}
+  {{ kpi('Need attention', attention|length, '2+ problems', 'neg' if attention else '', '#ef4444') }}
+  {{ kpi('New problems', new|length, 'since last snapshot', 'warn' if new else '', '#f59e0b') }}
+</div>
+<div class="grid g2">
+<div class="card"><div class="card-h"><h3>New problems since the last email</h3><span class="pill amber">{{ new|length }}</span></div>
+<table class="t compact"><thead><tr><th>Stock</th><th>What became a problem</th><th class="r">Total problems</th></tr></thead><tbody>
+{% for r, ps in new %}<tr>{{ probrow(r) }}<td>{% for x in ps %}<span class="pill red">{{ x }}</span> {% endfor %}</td><td class="r">{{ r.probs|length }}</td></tr>{% else %}<tr><td colspan="3"><div class="empty">Nothing new.</div></td></tr>{% endfor %}</tbody></table></div>
+<div class="card"><div class="card-h"><h3>Problems that cleared</h3><span class="pill green">{{ cleared|length }}</span></div>
+<table class="t compact"><thead><tr><th>Stock</th><th>What stopped being a problem</th><th class="r">Total problems</th></tr></thead><tbody>
+{% for r, ps in cleared %}<tr>{{ probrow(r) }}<td>{% for x in ps %}<span class="pill green">{{ x }}</span> {% endfor %}</td><td class="r">{{ r.probs|length }}</td></tr>{% else %}<tr><td colspan="3"><div class="empty">Nothing cleared.</div></td></tr>{% endfor %}</tbody></table></div>
+</div>
+<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>The stocks to look at, worst first</h3></div>
+<table class="t sortable"><thead><tr><th>Stock</th><th class="r">Need attention</th><th>Problems</th><th>Strengths</th><th>Worst problem</th><th class="r">P&amp;L %</th><th class="r">Mkt value</th></tr></thead><tbody>
+{% for r in attention %}<tr>{{ probrow(r) }}<td class="r neg"><b>{{ r.probs|length }}</b></td><td>{% for x in r.probs %}<span class="pill red">{{ x }}</span> {% endfor %}</td>
+<td>{% for x in r.strengths %}<span class="pill green">{{ x }}</span> {% endfor %}</td><td>{{ r.probs[0] }}</td><td class="r {{ r.p.pnl_pct|tone }}">{{ r.p.pnl_pct|pct(1) }}</td><td class="r">{{ r.p.mv|money }}</td></tr>
+{% else %}<tr><td colspan="7"><div class="empty">No stock has two or more problems.</div></td></tr>{% endfor %}</tbody></table></div>
+<div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Everything else with a problem</h3><span class="small muted">{{ others|length }} stocks</span></div>
+<table class="t sortable compact"><thead><tr><th>Stock</th><th>Problem</th><th>Strengths</th><th class="r">P&amp;L %</th><th class="r">Drawdown</th><th class="r">Mkt value</th></tr></thead><tbody>
+{% for r in others %}<tr>{{ probrow(r) }}<td><span class="pill amber">{{ r.probs[0] }}</span></td><td>{% for x in r.strengths %}<span class="pill green">{{ x }}</span> {% endfor %}</td><td class="r {{ r.p.pnl_pct|tone }}">{{ r.p.pnl_pct|pct(1) }}</td><td class="r {{ r.p.security.drawdown|tone }}">{{ r.p.security.drawdown|pct(1) }}</td><td class="r">{{ r.p.mv|money }}</td></tr>{% endfor %}</tbody></table></div>
+<div class="card"><div class="card-h"><h3>What each measure means</h3></div><table class="t"><thead><tr><th>Measure</th><th>Rule</th><th class="r">Stocks flagged today</th></tr></thead><tbody>
+{% for m, d in measures %}<tr><td><b>{{ m }}</b></td><td class="wrap">{{ d }}</td><td class="r">{{ counts[m] }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

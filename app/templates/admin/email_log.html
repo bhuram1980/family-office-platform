@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, pager %}
+{% set page_title = "Email log" %}
+{% block content %}
+<div class="ph"><div><h1>Email log</h1><div class="sub">System email: invites, resets, daily reviews and alerts</div></div></div>
+<div class="card"><table class="t compact"><thead><tr><th>When (UTC)</th><th>To</th><th>Subject</th><th>Kind</th><th>Status</th></tr></thead><tbody>
+{% for e in pag.items %}<tr><td>{{ e.at.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ e.to_addr }}</td><td>{{ e.subject }}</td><td><span class="pill">{{ e.kind }}</span></td><td>{{ status(e.status) }}</td></tr>{% endfor %}</tbody></table>{{ pager(pag) }}</div>
+{% endblock %}

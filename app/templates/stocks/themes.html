@@ -1,0 +1,9 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Themes" %}
+{% block content %}
+<div class="ph"><div><h1>Themes</h1><div class="sub">{{ rows|length }} investment themes · edit a security to change its theme</div></div></div>
+<div class="grid g3">{% for r in rows %}<div class="card"><div class="card-h"><div><h3>{{ r.name }}</h3><div class="csub">{{ r.ps|length }} names · {{ (r.mv / total * 100)|round(1) }}% of book</div></div><div class="r"><b>{{ r.mv|money_short }}</b><div class="tiny {{ r.pnl_pct|tone }}">{{ r.pnl_pct|pct(1) }} on cost</div></div></div>
+<div class="card-b"><div class="split small"><span class="muted">1M</span><span class="{{ r.m1|tone }}">{{ r.m1|pct }}</span></div><div class="split small"><span class="muted">Today</span><span class="{{ r.day|tone }}">{{ r.day|money }}</span></div>
+<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">{% for p in r.ps %}<a class="pill {{ 'green' if p.pnl > 0 else 'red' }}" href="{{ url_for('stocks.charts', t=p.security.ticker) }}">{{ p.security.ticker }}</a>{% endfor %}</div></div></div>{% endfor %}</div>
+{% endblock %}

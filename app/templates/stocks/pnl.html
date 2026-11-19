@@ -1,0 +1,19 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "P&L" %}
+{% block content %}
+<div class="ph"><div><h1>P&amp;L</h1><div class="sub">Realized from closed lots (FIFO), unrealized from open lots, income from dividends and interest</div></div><div class="acts"><a class="btn" href="{{ url_for('stocks.fees') }}">Fees &amp; costs →</a></div></div>
+<div class="grid g5">
+{{ kpi('Unrealized', t.unrealized|money, t.unrealized_pct|pct(1) ~ ' on cost', t.unrealized|tone, '#10b981') }}
+{{ kpi('Realized YTD', realized_ytd|money, 'all accounts', realized_ytd|tone, '#6366f1') }}
+{{ kpi('Realized all-time', realized_all|money, 'since inception', realized_all|tone, '#8b5cf6') }}
+{{ kpi('Dividends YTD', divs_ytd|money, 'cash received', 'pos', '#0ea5e9') }}
+{{ kpi('Net interest YTD', interest|money, 'sweep less margin', interest|tone, '#f59e0b') }}</div>
+<div class="grid g21"><div class="card"><div class="card-h"><h3>Realized P&amp;L by month</h3></div><div class="card-b">{{ chartbox(chart, 260) }}</div></div>
+<div class="card"><div class="card-h"><h3>By account</h3></div><table class="t compact"><thead><tr><th>Account</th><th class="r">Unrealized</th><th class="r">Realized YTD</th></tr></thead><tbody>
+{% for a, v in by_acct.items() %}<tr><td>{{ a.code }}</td><td class="r {{ v[0]|tone }}">{{ v[0]|money }}</td><td class="r {{ v[1]|tone }}">{{ v[1]|money }}</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="grid g2"><div class="card"><div class="card-h"><h3>Realized by ticker</h3></div><div style="max-height:420px;overflow:auto"><table class="t sortable compact"><thead><tr><th>Ticker</th><th class="r">Realized</th></tr></thead><tbody>
+{% for tk, v in top %}<tr><td><span class="tk">{{ tk }}</span></td><td class="r {{ v|tone }}">{{ v|money }}</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="card"><div class="card-h"><h3>Recent sales</h3></div><div style="max-height:420px;overflow:auto"><table class="t compact"><thead><tr><th>Date</th><th>Ticker</th><th class="r">Shares</th><th class="r">Price</th><th class="r">Realized</th></tr></thead><tbody>
+{% for s in sells %}<tr><td>{{ s.day|dfmt }}</td><td>{{ s.security.ticker if s.security }}</td><td class="r">{{ s.shares|num }}</td><td class="r">{{ s.price|money(2) }}</td><td class="r {{ s.realized_pnl|tone }}">{{ s.realized_pnl|money }}</td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

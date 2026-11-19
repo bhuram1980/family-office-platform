@@ -1,0 +1,66 @@
+{% macro kpi(label, value, sub=None, tone='', color=None, top=False, tag=None, big=False) -%}
+<div class="kpi {{ 'top' if top or color }}" {% if color %}style="--kc:{{ color }}"{% endif %}>
+  <div class="kl">{{ label }}{% if tag %}<span class="tag {{ 'b' if tag in ('S','$') }}">{{ tag }}</span>{% endif %}</div>
+  <div class="kv {{ tone }} {{ 'lg' if big }}">{{ value }}</div>
+  {% if sub %}<div class="ks">{{ sub|safe }}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro chartbox(cfg, height=240, id=None) -%}
+<div class="chart" style="height:{{ height }}px"><canvas {% if id %}id="{{ id }}"{% endif %} data-chart='{{ cfg|tojson }}'></canvas></div>
+{%- endmacro %}
+
+{% macro status(s) -%}
+{%- set m = {'pending':'amber','approved':'green','rejected':'red','open':'blue','closed':'gray','done':'green','Done':'green','active':'green','Active':'green',
+ 'In Review':'purple','Queued':'amber','overdue':'red','paid':'green','sent':'green','failed':'red','Pending':'amber','Complete':'green','Processed':'green',
+ 'high':'red','HIGH':'red','medium':'amber','MEDIUM':'amber','low':'blue','LOW':'blue','info':'blue','warning':'amber','critical':'red'} -%}
+<span class="pill {{ m.get(s, 'gray') }}">{{ s }}</span>
+{%- endmacro %}
+
+{% macro csrf() -%}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{%- endmacro %}
+
+{% macro post_button(action, label, cls='btn', confirm=None, icon=None, fields={}, disabled=False) -%}
+<form method="post" action="{{ action }}" style="display:inline">{{ csrf() }}{% for k,v in fields.items() %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}<input type="hidden" name="next" value="{{ request.full_path }}">
+<button class="{{ cls }}" {% if confirm %}onclick="return confirm('{{ confirm }}')"{% endif %} {% if disabled or not current_user.can_write %}disabled title="Read-only role"{% endif %}>{% if icon %}<i class="ic" data-lucide="{{ icon }}"></i>{% endif %}{{ label }}</button></form>
+{%- endmacro %}
+
+{% macro sort_th(label, key, cls='') -%}
+{%- set cur = request.args.get('sort','') -%}
+{%- set nxt = ('-' ~ key) if cur == key else key -%}
+<th class="{{ cls }} {{ 'sorted-asc' if cur == key else ('sorted-desc' if cur == '-' ~ key) }}"><a href="?{{ qs(sort=nxt, page=None) }}" style="color:inherit">{{ label }}</a></th>
+{%- endmacro %}
+
+{% macro pager(pag) -%}
+{% if pag.pages > 1 %}
+<div class="split" style="padding:10px 14px;border-top:1px solid var(--line2)">
+  <span class="muted small">{{ pag.total }} records · page {{ pag.page }} of {{ pag.pages }}</span>
+  <span>{% if pag.has_prev %}<a class="btn sm" href="?{{ qs(page=pag.prev_num) }}">← Prev</a>{% endif %}
+  {% if pag.has_next %}<a class="btn sm" href="?{{ qs(page=pag.next_num) }}">Next →</a>{% endif %}</span>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro field_input(f, value) -%}
+{% if f.type == 'text' %}<textarea class="inp" name="{{ f.name }}" {{ 'required' if f.required }}>{{ value if value is not none }}</textarea>
+{% elif f.type == 'bool' %}<input type="checkbox" name="{{ f.name }}" {{ 'checked' if value in (True,'on') }}>
+{% elif f.type in ('select','fk') %}<select class="inp" name="{{ f.name }}" {{ 'required' if f.required }}>{% if not f.required %}<option value="">—</option>{% endif %}
+  {% for v,l in f.options() %}<option value="{{ v }}" {{ 'selected' if value is not none and v|string == value|string }}>{{ l }}</option>{% endfor %}</select>
+{% else %}<input class="inp" name="{{ f.name }}" {{ 'required' if f.required }}
+  type="{{ {'date':'date','int':'number','float':'number','money':'number','email':'email','datetime':'datetime-local'}.get(f.type,'text') }}"
+  {% if f.type in ('float','money') %}step="any"{% endif %} value="{{ value if value is not none }}">{% endif %}
+{% if f.help %}<div class="tiny muted" style="margin-top:4px">{{ f.help }}</div>{% endif %}
+{%- endmacro %}
+
+{% macro bars(rows, color='#6366f1', money=False) -%}
+{% set mx = (rows|map(attribute=1)|max) if rows else 1 %}
+{% for label, v in rows %}
+<div style="padding:5px 0"><div class="split small"><span>{{ label }}</span><span class="mono">{{ v|money if money else v }}</span></div>
+<div class="bar" style="margin-top:4px"><i style="width:{{ (v / (mx or 1) * 100)|round(1) }}%;--bc:{{ color }}"></i></div></div>
+{% endfor %}
+{%- endmacro %}
+
+{% macro acct_chips(all_accts, codes, base) %}
+<div class="chips"><a class="chip {{ 'on' if not codes }}" href="{{ base }}?{{ qs(acct=None, page=None) }}">All accounts</a>
+{% for a in all_accts %}{% set on = a.code in codes %}{% set nxt = (codes|reject('equalto', a.code)|list) if on else (codes + [a.code]) %}
+<a class="chip {{ 'on' if on }}" href="{{ base }}?{{ qs(acct=(nxt|join(',')) or None, page=None) }}">{{ a.name }}</a>{% endfor %}</div>
+{% endmacro %}

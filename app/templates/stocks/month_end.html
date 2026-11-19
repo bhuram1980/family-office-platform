@@ -1,0 +1,11 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips %}
+{% set page_title = "Month-End Holdings" %}
+{% block content %}
+<div class="ph"><div><h1>Month-End Holdings</h1><div class="sub">Market value at each month-end, by entity, account and position</div></div></div>
+{{ acct_chips(all_accts, codes, url_for('stocks.month_end')) }}
+<div class="card"><div class="tbl-wrap"><table class="t matrix"><thead><tr><th>Entity / Account / Position</th>{% for e in ends %}<th class="r">{{ e|dfmt('%b %Y') }}<div class="tiny muted" style="text-transform:none">{{ e|dfmt('%m/%d/%y') }}</div></th>{% endfor %}</tr></thead><tbody>
+{% for acct, rows in grid.items() %}<tr style="background:#f8fafc"><td><b>{{ acct.entity }}</b> · {{ acct.name }}</td>{% for i in range(ends|length) %}<td class="r"><b>{{ (rows|map(attribute=1)|map(attribute=i)|sum)|money }}</b></td>{% endfor %}</tr>
+{% for p, vals in rows|sort(attribute='0.security.ticker') %}<tr><td style="padding-left:28px">{{ p.security.ticker }} <span class="muted">{{ p.security.name }}</span></td>{% for v in vals %}<td class="r">{{ v|money }}</td>{% endfor %}</tr>{% endfor %}{% endfor %}</tbody>
+<tfoot><tr><td>All accounts</td>{% for v in totals %}<td class="r">{{ v|money }}</td>{% endfor %}</tr></tfoot></table></div></div>
+{% endblock %}

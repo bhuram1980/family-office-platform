@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "macros.html" import field_input, csrf, post_button %}
+{% set page_title = ('Edit ' if obj and obj.id else 'New ') ~ r.singular|lower %}
+{% set active_nav = r.nav or r.endpoint('list') %}
+{% block content %}
+<div class="content narrow" style="padding:0;max-width:860px">
+<div class="ph"><div><a class="small" href="{{ url_for(r.endpoint('list')) }}">← {{ r.title }}</a><h1 style="margin-top:6px">{{ page_title|capitalize }}</h1>
+{% if obj and obj.id %}<div class="sub">{{ obj }}</div>{% endif %}</div>
+{% if obj and obj.id and current_user.can_write %}<div class="acts">{{ post_button(url_for(r.endpoint('delete'), obj_id=obj.id), 'Delete', 'btn', confirm='Delete this record?', icon='trash-2') }}</div>{% endif %}</div>
+<form method="post" class="card"><div class="card-b">{{ csrf() }}
+  <input type="hidden" name="next" value="{{ request.args.get('next','') }}">
+  {% for f in r.form_fields %}
+  <div class="form-row"><label>{{ f.label }}{% if f.required %} <span class="neg">*</span>{% endif %}</label>
+    {% set v = values.get(f.name) if values else (getattr_(obj, f.name) if obj and obj.id else (f.default() if f.default is callable else f.default)) %}
+    <div>{{ field_input(f, v) }}</div></div>
+  {% endfor %}
+  <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px">
+    <a class="btn" href="{{ url_for(r.endpoint('list')) }}">Cancel</a>
+    <button class="btn primary" {% if not current_user.can_write %}disabled{% endif %}>{{ 'Save changes' if obj and obj.id else 'Create ' ~ r.singular|lower }}</button></div>
+</div></form></div>
+{% endblock %}

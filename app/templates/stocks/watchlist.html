@@ -1,0 +1,11 @@
+{% extends "stocks/_layout.html" %}
+{% from "macros.html" import kpi, chartbox, status, csrf, post_button, bars, acct_chips, pager %}
+{% set page_title = "Watchlist" %}
+{% block content %}
+<div class="ph"><div><h1>Watchlist</h1><div class="sub">{{ items|length }} names · alerts when price falls below target</div></div><div class="acts"><a class="btn primary" href="{{ url_for('stocks.watch_new') }}"><i class="ic" data-lucide="plus"></i>Add to watchlist</a></div></div>
+<div class="card"><table class="t sortable"><thead><tr><th>Ticker</th><th>Name</th><th>Theme</th><th class="r">Price</th><th class="r">Day</th><th class="r">Target</th><th class="r">To target</th><th class="r">52w high</th><th>Held</th><th>Note</th><th></th></tr></thead><tbody>
+{% for w in items %}{% set s = w.security %}{% set gap = ((w.target_price / s.price - 1) * 100) if w.target_price else None %}
+<tr><td><a class="tk" href="{{ url_for('stocks.charts', t=s.ticker) }}">{{ s.ticker }}</a></td><td>{{ s.name }}</td><td class="small">{{ s.theme }}</td><td class="r">{{ s.price|money(2) }}</td><td class="r {{ s.change_pct|tone }}">{{ s.change_pct|pct }}</td>
+<td class="r">{{ w.target_price|money(2) }}</td><td class="r">{% if gap is not none and gap >= 0 %}<span class="pill green">At target</span>{% else %}{{ gap|pct(1) }}{% endif %}</td><td class="r">{{ s.high_52w|money(2) }}</td><td>{{ 'Yes' if s.id in held else '—' }}</td><td class="small muted wrap">{{ w.note }}</td>
+<td style="white-space:nowrap"><a class="btn sm" href="{{ url_for('stocks.watch_edit', obj_id=w.id) }}">Edit</a>{{ post_button(url_for('stocks.watch_delete', obj_id=w.id), 'Remove', 'btn sm') }}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

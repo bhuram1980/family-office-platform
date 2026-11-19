@@ -1,0 +1,9 @@
+{% extends "standalone.html" %}
+{% block title %}{{ code }}{% endblock %}
+{% block body %}
+<div class="dots" style="min-height:100vh;display:grid;place-items:center;text-align:center;padding:20px">
+  <div><div class="eyebrow">Error {{ code }}</div><h1 class="serif" style="font-size:40px;margin:8px 0">{{ msg }}</h1>
+  <p class="muted">{% if code == 403 %}Ask an administrator to grant access to this app.{% else %}Check the address, or head back.{% endif %}</p>
+  <p style="margin-top:18px"><a class="btn primary" href="{{ url_for('public.launch') }}">Back to the platform</a></p></div>
+</div>
+{% endblock %}
