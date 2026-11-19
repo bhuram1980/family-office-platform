@@ -5,3 +5,4 @@ from .pevc import *  # noqa
 from .tasks import *  # noqa
 from .deals import *  # noqa
 from .documents import *  # noqa
+from .philanthropy import *  # noqa

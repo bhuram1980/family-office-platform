@@ -74,3 +74,9 @@ def _doc_inbox():
 def _doc_flags():
     from .models import Document
     return Document.query.filter(Document.deleted_at.is_(None), Document.flagged.is_(True)).count()
+
+
+@badge("ph_requests")
+def _ph_requests():
+    from .models import Grant
+    return Grant.query.filter_by(status="Requested").count()

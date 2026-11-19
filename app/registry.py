@@ -183,7 +183,21 @@ app("documents", "Documents", "DC", "Documents", "#4f46e5",
         ]),
     ])
 app("philanthropy", "Philanthropy", "PH", "Philanthropy", "#e11d48",
-    "Family giving: grants, approvals, recipients, fund balance and reconciliation against the donor-advised fund.")
+    "Family giving: grants, approvals, recipients, fund balance and reconciliation against the donor-advised fund.",
+    nav=[
+        section("Giving", [
+            item("Dashboard", "philanthropy.dashboard", "layout-dashboard"),
+            item("Giving", "philanthropy.giving", "heart-handshake"),
+            item("Approvals", "philanthropy.approvals", "stamp", badge="ph_requests"),
+            item("Directory", "philanthropy.directory", "book-user"),
+        ]),
+        section("Finance", [
+            item("Reconciliation", "philanthropy.reconciliation", "scale"),
+            item("Grants Ledger", "philanthropy.grants_list", "book-open"),
+            item("Documents", "philanthropy.documents", "file-text"),
+            item("Settings", "philanthropy.settings", "settings"),
+        ]),
+    ])
 app("tasks", "Tasks", "TK", "Tasks", "#2563eb",
     "The office's work queue: assignments, sign-offs, recurring checklists, projects and meetings.",
     nav=[
