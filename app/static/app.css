@@ -231,3 +231,4 @@ textarea.inp{min-height:90px}
 select.inp{appearance:auto}
 .kcard[draggable=true]{cursor:grab}
 .kgrp.dragover,.drop.dragover{outline:2px dashed #6366f1}
+.btn.red{background:#fff;border-color:#fecaca;color:var(--red)}

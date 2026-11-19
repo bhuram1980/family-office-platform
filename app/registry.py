@@ -149,7 +149,21 @@ app("documents", "Documents", "DC", "Documents", "#4f46e5",
 app("philanthropy", "Philanthropy", "PH", "Philanthropy", "#e11d48",
     "Family giving: grants, approvals, recipients, fund balance and reconciliation against the donor-advised fund.")
 app("tasks", "Tasks", "TK", "Tasks", "#2563eb",
-    "The office's work queue: assignments, sign-offs, recurring checklists, projects and meetings.")
+    "The office's work queue: assignments, sign-offs, recurring checklists, projects and meetings.",
+    nav=[
+        section("Work", [
+            item("Board", "tasks.board", "kanban-square", badge="tasks_mine"),
+            item("New Task", "tasks.tasks_new", "plus"),
+            item("Projects", "tasks.projects", "folder-kanban"),
+            item("Recurring", "tasks.recurring", "repeat"),
+            item("Meetings", "tasks.meetings", "users"),
+            item("All Outstanding", "tasks.outstanding", "list-todo"),
+        ]),
+        section("System", [
+            item("Deleted", "tasks.deleted", "trash-2"),
+            item("Settings", "tasks.settings", "settings"),
+        ]),
+    ])
 app("real-estate", "Real Estate", "RE", "Real Estate", "#16a34a",
     "Property portfolio: value, equity, NOI, debt, DSCR and a market watch for every metro you own in.",
     nav=[

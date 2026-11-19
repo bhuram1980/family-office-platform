@@ -47,7 +47,7 @@
   {% for v,l in f.options() %}<option value="{{ v }}" {{ 'selected' if value is not none and v|string == value|string }}>{{ l }}</option>{% endfor %}</select>
 {% else %}<input class="inp" name="{{ f.name }}" {{ 'required' if f.required }}
   type="{{ {'date':'date','int':'number','float':'number','money':'number','email':'email','datetime':'datetime-local'}.get(f.type,'text') }}"
-  {% if f.type in ('float','money') %}step="any"{% endif %} value="{{ value if value is not none }}">{% endif %}
+  {% if f.type in ('float','money') %}step="any"{% endif %} value="{% if f.type == 'datetime' and value is not none and value.isoformat is defined %}{{ value.isoformat()[:16] }}{% else %}{{ value if value is not none }}{% endif %}">{% endif %}
 {% if f.help %}<div class="tiny muted" style="margin-top:4px">{{ f.help }}</div>{% endif %}
 {%- endmacro %}
 

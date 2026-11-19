@@ -49,3 +49,10 @@ def _pevc_unread():
 def _pevc_attention():
     from .blueprints.pevc import attention_items
     return len(attention_items())
+
+
+@badge("tasks_mine")
+def _tasks_mine():
+    from flask_login import current_user
+    from .models import Task
+    return Task.query.filter(Task.deleted_at.is_(None), Task.assignee_id == current_user.id, Task.status.notin_(["Done", "Canceled"])).count()

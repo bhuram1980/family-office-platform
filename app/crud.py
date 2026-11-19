@@ -85,7 +85,7 @@ class Resource:
     def __init__(self, app_id, slug, model, title, fields, singular=None,
                  order_by=None, search=None, filters=None, per_page=50,
                  subtitle=None, nav=None, row_link=None, readonly=False,
-                 query=None, extra_actions=None, summary=None, on_save=None):
+                 query=None, extra_actions=None, summary=None, on_save=None, on_delete=None, after_save=None):
         self.app_id = app_id
         self.slug = slug
         self.model = model
@@ -104,6 +104,8 @@ class Resource:
         self.extra_actions = extra_actions or []
         self.summary = summary
         self.on_save = on_save
+        self.on_delete = on_delete
+        self.after_save = after_save
         Resource.registry[(app_id, slug)] = self
 
     @property
@@ -208,6 +210,8 @@ class Resource:
             db.session.commit()
             flash(f"{self.singular} {'created' if is_new else 'saved'}.", "success")
             nxt = request.form.get("next")
+            if not nxt and self.after_save:
+                nxt = self.after_save(obj)
             return redirect(nxt if nxt and nxt.startswith("/") else url_for(self.endpoint("list")))
         return render_template("crud/form.html", r=self, obj=obj, values=None)
 
@@ -217,7 +221,10 @@ class Resource:
         obj = db.session.get(self.model, obj_id) or abort(404)
         label = str(obj)
         try:
-            db.session.delete(obj)
+            if self.on_delete:
+                self.on_delete(obj)
+            else:
+                db.session.delete(obj)
             audit(self.app_id, "delete", self.slug, obj_id, label)
             db.session.commit()
             flash(f"{self.singular} deleted.", "success")
