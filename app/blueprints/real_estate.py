@@ -5,6 +5,7 @@ from datetime import date, timedelta
 
 from flask import abort, flash, redirect, request, url_for
 from flask_login import current_user
+from markupsafe import escape
 
 from ..crud import Field as F, Resource
 from ..extensions import db
@@ -355,7 +356,7 @@ def answer(q):
 @bp.route("/ai/", methods=["GET", "POST"])
 def ai():
     q = (request.values.get("q") or "").strip()
-    blocks = [card(None, html(f'<form method="get" style="display:flex;gap:8px"><input class="inp" name="q" value="{q}" placeholder="Ask about the portfolio…" style="flex:1">'
+    blocks = [card(None, html(f'<form method="get" style="display:flex;gap:8px"><input class="inp" name="q" value="{escape(q)}" placeholder="Ask about the portfolio…" style="flex:1">'
                               f'<button class="btn primary">Ask</button></form><div class="chips" style="margin-top:10px">'
                               + "".join(f'<a class="chip" href="{u("ai", q=s)}">{s}</a>' for s in SUGGEST) + "</div>"), flush=False)]
     if q:

@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 
 from flask import abort, flash, redirect, request, url_for
 from flask_login import current_user
+from markupsafe import escape
 
 from ..crud import Field, Resource
 from ..extensions import db
@@ -388,8 +389,8 @@ def _org_html():
 
     def node(e, depth):
         s = (f'<div style="margin-left:{depth * 26}px;padding:7px 10px;border-left:2px solid #c7d2fe;margin-top:6px;background:#fafbff;border-radius:0 8px 8px 0">'
-             f'<a href="{url_for("family_office.entity_records_edit", obj_id=e.id)}"><b>{e.name}</b></a> <span class="pill gray">{e.kind}</span> '
-             f'<span class="small muted">{e.jurisdiction or ""} · {e.ownership_pct or 100:.0f}% · investments ${inv_by[e.id]:,.0f} · cash ${cash_by[e.id]:,.0f}</span></div>')
+             f'<a href="{url_for("family_office.entity_records_edit", obj_id=e.id)}"><b>{escape(e.name)}</b></a> <span class="pill gray">{escape(e.kind or "")}</span> '
+             f'<span class="small muted">{escape(e.jurisdiction or "")} · {e.ownership_pct or 100:.0f}% · investments ${inv_by[e.id]:,.0f} · cash ${cash_by[e.id]:,.0f}</span></div>')
         return s + "".join(node(c, depth + 1) for c in kids[e.id])
     return "".join(node(e, 0) for e in kids[None])
 
@@ -440,11 +441,11 @@ def investment_map():
     pts = [dict(n=i.name, c=i.asset_class, v=i.fmv or 0, lat=i.lat, lon=i.lon, url=url_for("family_office.investments_edit", obj_id=i.id)) for i in invs]
     h = ('<div id="map" style="height:560px;border-radius:10px"></div>'
          '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
-         "<script>document.addEventListener('DOMContentLoaded',function(){var pts=" + json.dumps(pts) + ";var m=L.map('map').setView([37.5,-92],4);"
+         "<script>document.addEventListener('DOMContentLoaded',function(){var pts=" + json.dumps(pts).replace("<", "\\u003c") + ";var m=L.map('map').setView([37.5,-92],4);"
          "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(m);"
-         "var col={'Real Estate':'#f59e0b','Private Equity':'#6366f1','Venture Capital':'#10b981'};"
+         "var esc=function(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML};var col={'Real Estate':'#f59e0b','Private Equity':'#6366f1','Venture Capital':'#10b981'};"
          "pts.forEach(function(p){L.circleMarker([p.lat,p.lon],{radius:Math.max(5,Math.sqrt(p.v)/350),color:col[p.c]||'#64748b',fillOpacity:.55}).addTo(m)"
-         ".bindPopup('<b>'+p.n+'</b><br>'+p.c+'<br>$'+Math.round(p.v).toLocaleString()+'<br><a href=\"'+p.url+'\">Open</a>');});});</script>")
+         ".bindPopup('<b>'+esc(p.n)+'</b><br>'+esc(p.c)+'<br>$'+Math.round(p.v).toLocaleString()+'<br><a href=\"'+p.url+'\">Open</a>');});});</script>")
     return render("Map View", [card(None, html(h), flush=False),
                                card("Locations", table(["Investment", "Class", "City", ">FMV"], [[i.name, i.asset_class, i.city, M(i.fmv)] for i in invs], max_height=320))],
                   sub=f"{len(invs)} located investments", back=("Investments", u("investments_list")))

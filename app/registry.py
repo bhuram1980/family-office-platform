@@ -131,7 +131,19 @@ app("family-office", "Family Office", "FO", "Family Office", "#0b1220",
 app("deals", "Deal Evaluator", "DE", "Deal Evaluator", "#4f46e5",
     "Screen, score and track every deal from first look to sign-off, with follow-ups and a full audit trail.")
 app("pevc", "PE / VC", "PV", "PE / VC Monitor", "#059669",
-    "Private-markets monitor: commitments, calls, NAV, TVPI and the documents behind every mark.")
+    "Private-markets monitor: commitments, calls, NAV, TVPI and the documents behind every mark.",
+    nav=[
+        section("Monitor", [
+            item("Overview", "pevc.dashboard", "layout-dashboard"),
+            item("Positions", "pevc.positions_page", "briefcase"),
+            item("Needs Attention", "pevc.attention", "triangle-alert", badge="pevc_attention"),
+            item("Operating", "pevc.operating", "activity"),
+            item("GP Updates", "pevc.updates", "newspaper", badge="pevc_unread"),
+            item("Financials", "pevc.financials", "line-chart"),
+            item("Coverage", "pevc.coverage", "folder-check"),
+            item("Quarterly Review", "pevc.review", "clipboard-check"),
+        ]),
+    ])
 app("documents", "Documents", "DC", "Documents", "#4f46e5",
     "An inbox that reads statements and notices, proposes where each file belongs, and files it on approval.")
 app("philanthropy", "Philanthropy", "PH", "Philanthropy", "#e11d48",

@@ -37,3 +37,15 @@ def _watch():
 def _re_issues():
     from .models import REIssue
     return REIssue.query.filter_by(status="Open", severity="HIGH").count()
+
+
+@badge("pevc_unread")
+def _pevc_unread():
+    from .models import GPUpdate
+    return GPUpdate.query.filter_by(read=False).count()
+
+
+@badge("pevc_attention")
+def _pevc_attention():
+    from .blueprints.pevc import attention_items
+    return len(attention_items())
